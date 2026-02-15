@@ -1,2 +1,5 @@
 # bbaccounts
-My own Accounts system for my products with API and Data save/Data get support
+Account system, with API and Data-save/Data-get support
+
+>[!warning]
+>Still in development, Wiki soon
