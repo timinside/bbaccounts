@@ -1,5 +1,6 @@
 # bbaccounts
-Account system, with API and Data-save/Data-get support
+Account system for your projects <3
 
 >[!warning]
 >Still in development, Wiki soon
+
