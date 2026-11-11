@@ -2,5 +2,7 @@
 Account system for your projects <3
 
 >[!warning]
->Still in development, Wiki soon
+>Almost ready, need github updates and uploading to hosting.
+>
+>+need code check for github sources
 
