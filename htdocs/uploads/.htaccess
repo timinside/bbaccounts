@@ -1,0 +1,16 @@
+# Uploaded files are data, never code.
+Options -Indexes
+
+<IfModule mod_mime.c>
+    RemoveHandler .php .phtml .phar .phps .cgi .pl .py .sh
+    RemoveType .php .phtml .phar .phps
+</IfModule>
+
+<FilesMatch "\.(php[0-9]?|phtml|phar|phps|pl|py|cgi|sh)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Deny from all
+    </IfModule>
+</FilesMatch>
