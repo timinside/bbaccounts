@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" content="#0a0c10">
+    <title>Developer docs · bbaccounts</title>
+    <script src="assets/js/theme.js?v=2.0.17"></script>
+    <link rel="stylesheet" href="assets/css/app.css?v=2.0.17">
+    <link rel="icon" href="assets/img/icon.svg?v=2.0.17" type="image/svg+xml">
+    <link rel="shortcut icon" href="assets/img/icon.png?v=2.0.17" type="image/png">
+    <link rel="apple-touch-icon" href="assets/img/icon.png?v=2.0.17">
+</head>
+<body class="site-body" data-leave-warning="https://bbaccounts.unaux.com/leave" data-trusted-sites='["bbaccounts.unaux.com"]' data-app-version="2.0.17">
+<header class="site-header">
+    <a class="brand" href="../index.html">
+        <img class="brand-mark" src="assets/img/icon.svg?v=2.0.17" alt="" width="32" height="32">
+        <span class="brand-name">bbaccounts</span>
+    </a>
+    <nav class="site-nav" aria-label="Site">
+        <a href="docs.html">Docs</a>
+        <a href="https://bbaccounts.unaux.com/p">Projects</a>
+        <a href="https://bbaccounts.unaux.com/u">Users</a>
+        <a href="../rules.html">Rules</a>
+        <a href="../privacy.html">Privacy</a>
+        <a href="../terms.html">Terms</a>
+                <a href="https://bbaccounts.unaux.com/login">Sign in</a>
+        <a class="btn btn-sm btn-primary" href="https://bbaccounts.unaux.com/register">Create account</a>
+                                <label class="lang-select-wrap" title="Language">
+            <span class="sr-only">Language</span>
+            <select class="lang-select" onchange="if(this.value)location.href=this.value">
+                <option value="docs.html"  selected>EN</option>
+                <option value="docs.ru.html"  >RU · Beta</option>
+            </select>
+        </label>
+                        <button class="icon-btn" type="button" data-theme-toggle aria-label="Change theme" title="Change theme">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.9 19.1 1.4-1.4"/><path d="m17.7 6.3 1.4-1.4"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>        </button>
+            </nav>
+</header>
+
+
+<main class="site-main">
+        <div class="page-head">
+    <div>
+        <p class="mono-label">Developer</p>
+        <h1>Documentation</h1>
+        <p class="page-sub">Everything needed to connect a client to bbaccounts: the authorization flow, token endpoints, scopes, and errors.</p>
+    </div>
+</div>
+
+<div class="docs-layout">
+    <nav class="docs-nav" aria-label="Documentation">
+        <p class="mono-label">Guides</p>
+        <a href="docs-installation.html">Installation</a>
+        <p class="mono-label">Protocol</p>
+        <a href="#overview">Overview</a>
+        <a href="#flow">Authorization flow</a>
+        <a href="#direct">Direct requests</a>
+        <a href="#guard-api">Guard API</a>
+        <a href="#authorize">Authorization request</a>
+        <a href="#token">Token exchange</a>
+        <a href="#userinfo">User info</a>
+        <a href="#refresh">Refresh</a>
+        <a href="#revoke">Revoke</a>
+        <a href="#native">Desktop and native apps</a>
+        <p class="mono-label">Reference</p>
+        <a href="#scopes">Scopes</a>
+        <a href="#icons">Profile icons</a>
+        <a href="#profile-api">Profile API</a>
+        <a href="#points-api">Points API</a>
+        <a href="#friends-api">Friends API</a>
+        <a href="#badges-api">Badges API</a>
+        <a href="#cells-api">Cells API</a>
+        <a href="#teams-api">Teams API</a>
+        <a href="#errors">Errors</a>
+        <a href="#projects">Projects and keys</a>
+        <a href="#accounts">Accounts and recovery</a>
+        <a href="#social">Social sign-in</a>
+        <a href="#examples">Examples</a>
+        <a href="#still-not-clear">Still not clear?</a>
+    </nav>
+
+    <div class="docs-body">
+        <section id="overview">
+            <h2>Overview</h2>
+            <p>bbaccounts implements the OAuth 2.0 authorization code grant with PKCE. It issues opaque Bearer tokens rather than JWTs; validate them by calling the user info endpoint. Every credential is scoped to one project.</p>
+            <p class="callout">
+                <strong>Do I need my own authorization server?</strong> No. bbaccounts is the authorization server. Your app redirects users to bbaccounts, receives an authorization code, and exchanges it for tokens on your backend.            </p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Endpoint</th><th>Method</th><th>Purpose</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>/oauth/authorize</code></td><td>GET</td><td>Start authorization, render sign-in or consent</td></tr>
+                        <tr><td><code>/oauth/authorize</code></td><td>POST</td><td>Submit the consent decision</td></tr>
+                        <tr><td><code>/oauth/token</code></td><td>POST</td><td>Exchange a code or refresh token</td></tr>
+                        <tr><td><code>/oauth/userinfo</code></td><td>GET, POST</td><td>Read the authorized profile</td></tr>
+                        <tr><td><code>/oauth/revoke</code></td><td>POST</td><td>Revoke an access or refresh token</td></tr>
+                        <tr><td><code>/api/guard</code></td><td>GET</td><td>Read the Guard secret and current code</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>All production URLs use <code>https://</code>. The base URL for this instance is <code>https://bbaccounts.unaux.com</code>.</p>
+        </section>
+
+        <section id="direct">
+            <h2>Direct requests</h2>
+            <div style="border:2px solid var(--accent,#6c8cff);background:color-mix(in srgb,var(--accent,#6c8cff) 12%,transparent);border-radius:12px;padding:18px 20px;margin:16px 0 20px;overflow-wrap:anywhere;word-break:break-word">
+                <p style="margin:0 0 8px;font-weight:700;font-size:1.08rem">Client secret is NOT an access token</p>
+                <p style="margin:0 0 12px">Do not pass <code>client_secret</code> as <code>Authorization: Bearer</code> or <code>?access_token=</code>. The client secret is used only when exchanging an authorization code for tokens.</p>
+                <p style="margin:0 0 8px;font-weight:600">How to get an access token</p>
+                <ol style="margin:0;padding-left:20px;display:grid;gap:6px">
+                    <li>Create a project in Developer, set Redirect URI/scopes, and create a credential. Save <code>client_id</code> and <code>client_secret</code> (confidential clients).</li>
+                    <li>Redirect the user to <code>GET /oauth/authorize?response_type=code&amp;client_id=...&amp;redirect_uri=...&amp;scope=profile%20email&amp;state=...&amp;code_challenge=...&amp;code_challenge_method=S256</code>.</li>
+                    <li>After redirect, exchange <code>code</code> on your server: <code>POST /oauth/token</code> with <code>grant_type=authorization_code</code>, <code>code</code>, <code>redirect_uri</code>, <code>client_id</code>, <code>code_verifier</code>, and <code>client_secret</code> for confidential clients.</li>
+                    <li>The response contains <code>access_token</code> (~1 hour) and <code>refresh_token</code>. Use the token: <code>Authorization: Bearer &lt;access_token&gt;</code> or <code>?access_token=...</code></li>
+                </ol>
+            </div>
+            <p>Once you have an access token, every endpoint is a plain HTTPS call to the hosted domain. No SDK is needed. The token identifies the account; you do not pass an account ID separately for token-based endpoints.</p>
+            <p>You can send the token in three ways (all supported):</p>
+            <div class="code-block">
+                <pre><code># 1) Authorization header (recommended)
+curl -i "https://bbaccounts.unaux.com/oauth/userinfo" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# 2) Query parameter
+curl -i "https://bbaccounts.unaux.com/oauth/userinfo?access_token=ACCESS_TOKEN"
+
+# 3) token= query parameter (alias)
+curl -i "https://bbaccounts.unaux.com/api/profile?username=timinside"</code></pre>
+            </div>
+            <p>On shared hosting, some proxies strip the <code>Authorization</code> header. If you get <code>invalid_token</code> with a valid token, retry with <code>?access_token=...</code> or <code>?token=...</code>. Also send a User-Agent header; some hosts return an anti-bot challenge page to requests without one.</p>
+            <p class="field-hint" style="border-left:3px solid var(--warn,#e6a23c);padding-left:12px;margin-top:12px">
+                <strong>unaux.com / ProFreeHost limitation:</strong> this host may show a JavaScript anti-bot challenge (<code>aes.js</code>, sets a <code>__test</code> cookie) before PHP runs. Plain <code>curl</code> cannot execute that JavaScript, so the request may never reach the bbaccounts API. Easy workaround: use the Python stdlib script below (<code>examples/python/bb-unaux.py</code>, no pip) to solve the challenge automatically, or reuse a browser <code>__test</code> cookie in curl. This is a hosting limitation, not an API token problem.            </p>
+            <p><strong>Workarounds for curl:</strong></p>
+            <div class="code-block">
+                <pre><code># 1) Reuse the __test cookie from your browser (works until the cookie expires/IP changes).
+#    Open https://bbaccounts.unaux.com/ in a browser, pass the challenge, then copy the __test cookie
+#    value from DevTools -> Application/Storage -> Cookies.
+curl -i -A "Mozilla/5.0" \
+  -H "Cookie: __test=PASTE_COOKIE_VALUE_HERE" \
+  "https://bbaccounts.unaux.com/oauth/userinfo?access_token=ACCESS_TOKEN"
+
+# 2) Save/reuse cookies with a cookie jar (useful after you have a valid __test cookie).
+curl -i -A "Mozilla/5.0" -c bb-cookies.txt -b bb-cookies.txt \
+  -H "Cookie: __test=PASTE_COOKIE_VALUE_HERE" \
+  "https://bbaccounts.unaux.com/api/profile?username=timinside"
+
+# 3) POST example with browser-like headers + __test cookie.
+curl -i -A "Mozilla/5.0" \
+  -H "Cookie: __test=PASTE_COOKIE_VALUE_HERE" \
+  -H "Content-Type: application/json" \
+  -X POST "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" \
+  -d '{"amount":10}'</code></pre>
+            </div>
+            <p><strong>Python (no pip, stdlib only) - solves the challenge automatically:</strong></p>
+            <p>
+                <a class="btn btn-secondary" href="https://timinside.github.io/bbaccounts/downloads/bb-unaux.py" download="bb-unaux.py">Download bb-unaux.py v1.0</a>
+            </p>
+            <p class="field-hint">Save the file and run it with Python 3. No pip dependencies. Also available as <code>examples/python/bb-unaux.py</code> in the repo.</p>
+            <div class="code-block">
+                <pre><code># Linux / macOS
+python3 bb-unaux.py "https://bbaccounts.unaux.com/api/profile?username=timinside"
+python3 bb-unaux.py "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" POST '{"amount":10}'
+
+# Windows cmd
+python bb-unaux.py "https://bbaccounts.unaux.com/api/profile?username=timinside"
+python bb-unaux.py "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" POST "{\"amount\":10}"</code></pre>
+            </div>
+            <p>For reliable server-side access, disable the challenge for <code>/api/*</code> and <code>/oauth/*</code> in the hosting panel if available, or put a domain/proxy in front that forwards requests directly to PHP. Browser-based user flows are not affected.</p>
+            <div class="code-block">
+                <pre><code># Normal examples (work when no anti-bot challenge is in front of PHP)
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/oauth/userinfo?access_token=ACCESS_TOKEN"
+
+# POST with JSON body and Authorization header
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/points" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":10}'
+
+# POST with token in query
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":-5}'</code></pre>
+            </div>
+            <p><code>/oauth/userinfo</code> uses the scopes you approved. The <code>/api/*</code> endpoints need the matching verified-project scope: <code>profile</code>, <code>points</code>, <code>friends</code>, <code>badges</code> or <code>teams</code>. A missing scope returns <code>insufficient_scope</code>.</p>
+        </section>
+
+        <section id="guard-api">
+            <h2>Guard API</h2>
+            <p>The <code>guard</code> scope lets a verified companion app read the account's TOTP secret and current code, so it can show a rotating code locally. Enable Guard under <strong>Account → Security</strong> first.</p>
+            <div class="code-block">
+                <pre><code>GET https://bbaccounts.unaux.com/api/guard
+Authorization: Bearer ACCESS_TOKEN</code></pre>
+            </div>
+            <p>The response contains <code>enabled</code>, <code>secret</code>, <code>code</code>, <code>digits</code>, <code>period</code> and <code>expires_in</code>. Enter the displayed code in the sign-in form to confirm a login; each code is accepted once.</p>
+            <p>On the same computer, running <code>bbaccounts --service</code> lets the sign-in page ask the desktop window for approval instead. Set <code>guard.service_url</code> to <code>http://localhost:53683/confirm</code> in <code>config.local.php</code>; leave it empty on a hosted install. The page posts <code>{"email","app","ip","user_agent"}</code> and expects <code>{"approved":true}</code>. Denial or an unreachable service falls back to the code field.</p>
+        </section>
+
+        <section id="flow">
+            <h2>Authorization flow</h2>
+            <ol>
+                <li>Your app creates a PKCE verifier and sends the user to the authorization endpoint with its S256 challenge and a <code>state</code> value.</li>
+                <li>bbaccounts signs the user in if needed, then shows the consent screen unless a matching consent already exists.</li>
+                <li>On approval, the browser returns to your registered redirect URI with a one-time <code>code</code> and your unchanged <code>state</code>.</li>
+                <li>Your server exchanges the code and verifier for an access token and a refresh token.</li>
+                <li>Call <code>/oauth/userinfo</code> with the access token. Refresh before the hour is up.</li>
+            </ol>
+            <p>Authorization codes live for 10 minutes and can be used once. Access tokens live for one hour. Refresh tokens live for 30 days and rotate on every use.</p>
+        </section>
+
+        <section id="authorize">
+            <h2>Authorization request</h2>
+            <p>Send the browser to this endpoint as a top-level navigation:</p>
+            <div class="code-block">
+                <pre><code>GET https://bbaccounts.unaux.com/oauth/authorize
+  ?client_id=YOUR_CLIENT_ID
+  &amp;redirect_uri=https%3A%2F%2Fapp.example.com%2Fcallback
+  &amp;response_type=code
+  &amp;scope=profile%20email
+  &amp;state=RANDOM_NONCE
+  &amp;code_challenge=BASE64URL_SHA256_OF_VERIFIER
+  &amp;code_challenge_method=S256</code></pre>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Parameter</th><th>Required</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>client_id</code></td><td>yes</td><td>A credential client ID from the project page</td></tr>
+                        <tr><td><code>redirect_uri</code></td><td>yes</td><td>Must exactly match a registered URI</td></tr>
+                        <tr><td><code>response_type</code></td><td>yes</td><td>Only <code>code</code> is supported</td></tr>
+                        <tr><td><code>scope</code></td><td>no</td><td><code>profile email</code> is the default</td></tr>
+                        <tr><td><code>state</code></td><td>recommended</td><td>Returned unchanged; compare it to your stored value</td></tr>
+                        <tr><td><code>code_challenge</code></td><td>recommended</td><td>43-128 characters after base64url encoding. Required for public clients</td></tr>
+                        <tr><td><code>code_challenge_method</code></td><td>no</td><td><code>S256</code> by default; <code>plain</code> accepted with a 43+ character challenge</td></tr>
+                        <tr><td><code>prompt</code></td><td>no</td><td><code>consent</code> forces the consent screen again</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Denial or a bad request redirects back with <code>error</code> and <code>error_description</code>. If the client ID or redirect URI itself is wrong, bbaccounts shows an error page instead of redirecting, because the destination cannot be trusted.</p>
+        </section>
+
+        <section id="token">
+            <h2>Token exchange</h2>
+            <p>Exchange the code from a server-side request. Authenticate with HTTP Basic or send the credentials in the body.</p>
+            <div class="code-block">
+                <pre><code>POST https://bbaccounts.unaux.com/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=RETURNED_CODE
+&amp;redirect_uri=https%3A%2F%2Fapp.example.com%2Fcallback
+&amp;client_id=YOUR_CLIENT_ID
+&amp;client_secret=YOUR_CLIENT_SECRET
+&amp;code_verifier=YOUR_PKCE_VERIFIER</code></pre>
+            </div>
+            <p>Response:</p>
+            <div class="code-block">
+                <pre><code>{
+  "access_token": "…",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "…",
+  "scope": "profile email"
+}</code></pre>
+            </div>
+            <p>The request must repeat the same <code>redirect_uri</code> used during authorization. If the code was issued with a challenge, the verifier is mandatory. A public client may omit the secret only when PKCE was used.</p>
+        </section>
+
+        <section id="userinfo">
+            <h2>User info</h2>
+            <p>
+                Returns the account that owns the access token. You do not pass a username or account ID here; the token already identifies the account.
+            </p>
+            <div class="code-block">
+                <pre><code># Recommended: Authorization header
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/oauth/userinfo" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Also works: token in URL
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/oauth/userinfo?access_token=ACCESS_TOKEN"
+
+# Also works: POST
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/oauth/userinfo" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre>
+            </div>
+            <p>Fields depend on the granted scopes:</p>
+            <div class="code-block">
+                <pre><code>{
+  "sub": "42",
+  "display_name": "Example User",
+  "username": "example_user",
+  "description": "Builds small tools.",
+  "avatar_url": "https://bbaccounts.unaux.com/avatar/42.svg",
+  "email": "user@example.com",
+  "email_verified": false,
+  "social": { "github": "octocat" },
+  "updated_at": "2026-11-09T12:00:00+00:00"
+}</code></pre>
+            </div>
+            <p><code>sub</code> is the stable account ID. Store it as the external identifier; email addresses can change. <code>email_verified</code> is always false on this instance because there is no email delivery.</p>
+            <p><code>social</code> maps each linked provider to its username. The master switch is <strong>Profile → Privacy</strong>, and each provider is opted in separately under <a href="https://bbaccounts.unaux.com/account/connections?tab=social">Account → Connections</a>.</p>
+        </section>
+
+        <section id="refresh">
+            <h2>Refresh</h2>
+            <div class="code-block">
+                <pre><code>POST https://bbaccounts.unaux.com/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token
+&amp;refresh_token=CURRENT_REFRESH_TOKEN
+&amp;client_id=YOUR_CLIENT_ID
+&amp;client_secret=YOUR_CLIENT_SECRET</code></pre>
+            </div>
+            <p>The response has the same shape as the code exchange. Both tokens are replaced: save the new refresh token, because the old one stops working. A failed refresh means the user must authorize again.</p>
+        </section>
+
+        <section id="revoke">
+            <h2>Revoke</h2>
+            <div class="code-block">
+                <pre><code>POST https://bbaccounts.unaux.com/oauth/revoke
+Content-Type: application/x-www-form-urlencoded
+
+token=ACCESS_OR_REFRESH_TOKEN
+&amp;client_id=YOUR_CLIENT_ID
+&amp;client_secret=YOUR_CLIENT_SECRET</code></pre>
+            </div>
+            <p>Revoking an access token or its refresh token invalidates the pair. Users can also revoke a whole project from their authorized apps page, which removes consent, tokens, and unused codes at once.</p>
+        </section>
+
+        <section id="native">
+            <h2>Desktop and native apps</h2>
+            <p>Desktop, CLI, and single-page apps cannot keep a client secret. Create a credential with <strong>Public client</strong> enabled, use PKCE with <code>S256</code>, and omit <code>client_secret</code> when exchanging the code and refreshing tokens.</p>
+            <p>Open the authorization page in the system browser, not an embedded web view. Listen on a loopback address and register that exact URI on the project. A fixed port keeps the exact match simple; the example below uses <code>http://localhost:53682/callback</code>.</p>
+            <div class="code-block">
+                <pre><code>POST https://bbaccounts.unaux.com/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=RETURNED_CODE
+&amp;redirect_uri=http%3A%2F%2Flocalhost%3A53682%2Fcallback
+&amp;client_id=PUBLIC_CLIENT_ID
+&amp;code_verifier=YOUR_PKCE_VERIFIER</code></pre>
+            </div>
+            <p>Store access and refresh tokens in the OS credential store: DPAPI or Credential Manager on Windows, Secret Service on Linux. The sample at <code>examples/desktop</code> is a Windows-only WinForms <code>net10.0-windows</code> app using <code>HttpListener</code> and DPAPI. The <code>examples/php-web</code> and <code>examples/python</code> folders contain minimal web examples with no dependencies.</p>
+        </section>
+
+        <section id="scopes">
+            <h2>Scopes</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Scope</th><th>Grants</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>profile</code></td><td><code>display_name</code>, <code>username</code>, <code>description</code>, <code>avatar_url</code>, and <code>social</code> for providers the account chose to share</td></tr>
+                        <tr><td><code>email</code></td><td><code>email</code>, <code>email_verified</code></td></tr>
+                        <tr><td><code>guard</code></td><td>Read the Guard secret and current six-digit code through the Guard API (verified projects only)</td></tr>
+                        <tr><td><code>points</code></td><td>Read and change the account&#039;s point balance through the Points API (verified projects only)</td></tr>
+                        <tr><td><code>friends</code></td><td>Read and manage the account&#039;s friends through the Friends API (verified projects only)</td></tr>
+                        <tr><td><code>badges</code></td><td>Create custom badges and issue them to accounts through the Badges API (verified projects only)</td></tr>
+                        <tr><td><code>teams</code></td><td>Read the account&#039;s team memberships and subscriptions through the Teams API (verified projects only)</td></tr>
+                        <tr><td><code>cells</code></td><td>Create, read, update and delete project storage cells through the Cells API (verified projects only)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Requesting any other scope returns <code>invalid_scope</code>. Omitting <code>scope</code> asks for the standard scopes; <code>guard</code> must be requested explicitly.</p>
+        </section>
+
+        <section id="icons">
+            <h2>Profile icons</h2>
+            <p>Small icons appear right after a display name. Hover or focus one to read what it means.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Icon</th><th>Meaning</th></tr></thead>
+                    <tbody>
+                        <tr><td>Gold check</td><td>The profile or project has a gold verification check, granted by an administrator.</td></tr>
+                        <tr><td>Blue check</td><td>A regular verification check, granted by an administrator.</td></tr>
+                        <tr><td>Shield (red)</td><td>Admin role.</td></tr>
+                        <tr><td>Code brackets</td><td>Developer role.</td></tr>
+                        <tr><td>Shield (orange)</td><td>Tester role.</td></tr>
+                        <tr><td>Shield (blue)</td><td>Moderator role.</td></tr>
+                        <tr><td>Red exclamation</td><td>The account is banned until the date in the tooltip.</td></tr>
+                        <tr><td>Blue snowflake</td><td>The account is frozen until the date in the tooltip.</td></tr>
+                        <tr><td>Orange triangle</td><td>An administrator left a warning note. The full note appears in a warning box on the profile and as this icon next to the owner on a project sign-in page.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Role icons can be hidden by the account owner in Privacy settings. Verification, status, and warning marks are always shown.</p>
+        </section>
+
+        <section id="points-api">
+            <h2>Points API</h2>
+            <p>Read or change the point balance of the account that owns the token. The token identifies the account; no account ID is needed. Requires a verified project and the <code>points</code> scope.</p>
+            <div class="code-block">
+                <pre><code># Read balance
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/points" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Add 10 points
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/points" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":10}'
+
+# Spend 5 points (token in URL also works)
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":-5}'</code></pre>
+            </div>
+            <p>
+                Response: <code>{"points": 42}</code>. Amount must be a non-zero whole number between −10,000 and 10,000. The balance never goes below zero.            </p>
+        </section>
+
+        <section id="friends-api">
+            <h2>Friends API</h2>
+            <p>Manage the friend list of the token owner. The token identifies the account. Requires a verified project and <code>friends</code> scope.</p>
+            <div class="code-block">
+                <pre><code># List friends
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/friends" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Send friend request by username
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/friends" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"timinside"}'
+
+# Remove friend / cancel request (42 is the friend's account ID)
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/friends/42/remove" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre>
+            </div>
+            <p><code>GET</code> returns <code>count</code>, <code>limit</code>, <code>friends</code>, <code>incoming</code>, and <code>outgoing</code>. <code>POST /api/friends</code> returns <code>state</code>: <code>sent</code>, <code>pending</code>, <code>accepted</code>, or <code>friends</code>.</p>
+        </section>
+
+        <section id="profile-api">
+            <h2>Profile API</h2>
+            <p>Read a public profile. Pass <code>username</code> to select the account. Without a token, only public base profile data is returned. With a verified project token (<code>profile</code> scope), the token identifies who is asking; omit <code>username</code> to read the token owner's own profile.</p>
+            <div class="code-block">
+                <pre><code># Read a public profile without an access token
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile?username=timinside"
+
+# Read your own profile (account identified by token)
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Read another account with token (friend/self can see full private fields)
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile?username=timinside" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre>
+            </div>
+            <p>Private profiles return only avatar, banner, background, display name and username; other fields are <code>none</code> unless the viewer is the owner or an accepted friend. Unknown accounts return <code>404</code>.</p>
+        </section>
+
+        <section id="badges-api">
+            <h2>Badges API</h2>
+            <p>Create and issue badges for your verified project. Requires <code>badges</code> scope. Badges are created on the project settings page or through this API. Each badge has a numeric <code>id</code> - use that ID to issue it.</p>
+            <div class="code-block">
+                <pre><code># List project badges
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/badges" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Create a badge
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/badges" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Beta Tester","description":"Tested the beta"}'
+
+# Issue badge by badge ID to a user by username
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/badges/12/issue" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"timinside"}'</code></pre>
+            </div>
+            <p>Issuing a badge again is safe. A project can only issue its own badges. The issue endpoint accepts the badge ID in the URL.</p>
+        </section>
+
+        <section id="cells-api">
+            <h2>Cells API</h2>
+            <p>Store small project data in cells. Requires a verified project and <code>cells</code> scope. Each cell has a numeric <code>id</code>, a <code>key</code>, and a <code>value</code> up to 256KB. A cell can be project-scoped or bound to a user (<code>username</code>).</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Endpoint</th><th>Method</th><th>Purpose</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>/api/cells</code></td><td>GET</td><td>List cells (filter by <code>username</code>, <code>key</code>, <code>scope=project</code>)</td></tr>
+                        <tr><td><code>/api/cells</code></td><td>POST</td><td>Create or update a cell by key (upsert)</td></tr>
+                        <tr><td><code>/api/cells/{id}</code></td><td>GET</td><td>Read a cell including its value</td></tr>
+                        <tr><td><code>/api/cells/{id}</code></td><td>PUT/POST</td><td>Update cell value</td></tr>
+                        <tr><td><code>/api/cells/{id}</code></td><td>DELETE</td><td>Delete a cell</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="code-block">
+                <pre><code># Create/update a project-scoped cell
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/cells" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"welcome_message","value":"Hello!"}'
+
+# Create/update a user-bound cell
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/cells" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"save_slot_1","value":"{\"level\":3}","username":"timinside"}'
+
+# List cells for a user
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/cells?username=timinside" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Read / update / delete by cell ID
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/cells/42" -H "Authorization: Bearer ACCESS_TOKEN"
+curl -i -A "MyApp/1.0" -X PUT "https://bbaccounts.unaux.com/api/cells/42" \
+  -H "Authorization: Bearer ACCESS_TOKEN" -H "Content-Type: application/json" \
+  -d '{"value":"new value"}'
+curl -i -A "MyApp/1.0" -X DELETE "https://bbaccounts.unaux.com/api/cells/42" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre>
+            </div>
+            <p>List responses omit <code>value</code>; fetch a cell by ID to read its value. Project-bound and user-bound cells with the same key are different cells.</p>
+        </section>
+
+        <section id="teams-api">
+            <h2>Teams API</h2>
+            <p>Read the token owner's teams. Requires a verified project and <code>teams</code> scope. The token identifies the account.</p>
+            <div class="code-block">
+                <pre><code>curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/teams" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Token in URL also works
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/teams?access_token=ACCESS_TOKEN"</code></pre>
+            </div>
+            <p>Returns <code>count</code> and <code>teams</code>. Each team includes <code>id</code>, <code>name</code>, <code>slug</code>, your <code>role</code>, <code>subscribed</code>, and <code>members</code>.</p>
+        </section>
+
+        <section id="errors">
+            <h2>Errors</h2>
+            <p>Token endpoint failures return JSON with an HTTP status and these fields:</p>
+            <div class="code-block">
+                <pre><code>{ "error": "invalid_grant", "error_description": "The authorization code is invalid or expired." }</code></pre>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Error</th><th>Meaning</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>invalid_request</code></td><td>A required parameter is missing or malformed</td></tr>
+                        <tr><td><code>invalid_client</code></td><td>Unknown client, wrong secret, or missing client authentication</td></tr>
+                        <tr><td><code>invalid_grant</code></td><td>Code or refresh token invalid, expired, or already used</td></tr>
+                        <tr><td><code>invalid_scope</code></td><td>A requested scope is not supported</td></tr>
+                        <tr><td><code>unsupported_grant_type</code></td><td>Not <code>authorization_code</code> or <code>refresh_token</code></td></tr>
+                        <tr><td><code>invalid_token</code></td><td>Bearer token rejected by the user info endpoint</td></tr>
+                        <tr><td><code>slow_down</code></td><td>Too many token requests from one IP</td></tr>
+                        <tr><td><code>access_denied</code></td><td>The user pressed Deny</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2>Projects and keys</h2>
+            <div style="border:2px solid var(--accent,#6c8cff);background:color-mix(in srgb,var(--accent,#6c8cff) 12%,transparent);border-radius:12px;padding:18px 20px;margin:16px 0 20px;overflow-wrap:anywhere;word-break:break-word">
+                <p style="margin:0 0 8px;font-weight:700;font-size:1.08rem">What the Projects tab is for</p>
+                <p style="margin:0 0 10px">The <strong>Developer → Projects</strong> tab is where you set up and manage apps that use bbaccounts OAuth/API.</p>
+                <ul style="margin:0;padding-left:20px;display:grid;gap:6px">
+                    <li><strong>Create a project</strong> - register your app/game/service that will sign users in with bbaccounts.</li>
+                    <li><strong>Redirect URIs</strong> - add exact callback URLs where bbaccounts can return users after authorization.</li>
+                    <li><strong>Client credentials</strong> - create labeled keys; get <code>client_id</code> and a one-time <code>client_secret</code> for OAuth token exchange.</li>
+                    <li><strong>Branding/settings</strong> - edit project name, description, logo, and other project details shown to users.</li>
+                    <li><strong>Manage access</strong> - revoke a key, rotate credentials, or delete a project when it is no longer needed.</li>
+                </ul>
+            </div>
+            <p>Developer access is enabled manually on an account. Once enabled, the developer page lets you create projects, edit branding, register redirect URIs, and issue labeled client credentials. A project can hold up to ten active credentials, so you can rotate one without breaking another integration.</p>
+            <p>A regular credential gets a secret shown once at creation; if it is lost, revoke that key and create a new one. A <strong>public client</strong> has no secret at all and must use PKCE. Use public clients for desktop apps, CLIs, and browser-only apps. Deleting a project cascades to its redirect URIs, credentials, authorization codes, tokens, and user consents.</p>
+        </section>
+
+        <section id="accounts">
+            <h2>Accounts and recovery</h2>
+            <p>Accounts use email and password. Because this instance cannot send email, there is no verification link and no reset email. Each account receives ten single-use recovery codes at registration; they can be regenerated from the security page with the current password. A code resets the password and is consumed on use.</p>
+            <p>Changing a password signs out every other session. Sessions last 30 days and slide forward while active. Users can inspect and revoke devices from the security page, and switch between accounts already signed in on the same device without a password. Each account can publish a public profile at <code>/u/{username}</code> with a unique <code>@username</code>, a short description, roles, selected social providers, and up to three showcases: custom text, active projects, Badge Earned, media uploads, GitHub repositories, links, Friends, or Best friends. Badge Earned and Friends are always present and can only be turned off, never removed. Media is an image or video upload and costs 20 points each time; removing it does not refund the points. Earned badges appear only inside the Badge Earned showcase, as artwork with the name shown on hover. Writing <code>@username</code> in a description or showcase links to that profile.</p>
+            <p>Other signed-in people can like a profile once. A like is worth 2 points to the profile owner, and each accepted friendship earns 5 points for both people. 15 points buy one extra showcase slot (up to ten) or 15 points buy 10 extra friend slots (up to thirty; the base limit is twenty). Rules are published at <code>/rules</code>; blocks, rate limits, unique identities, and self-like prevention are enforced without an administrator online.</p>
+        </section>
+
+        <section id="social">
+            <h2>Social sign-in</h2>
+            <p>Google, GitHub, and Discord sign-in appear on the login page when the instance has credentials for them in <code>private/config/config.php</code>. Each provider links only to an existing account when its verified email matches. Social sign-in never creates an account: register with email first, then connect the provider.</p>
+            <p>Linked providers do not replace your password. Set one in Security if you signed up with email and password. A provider cannot be disconnected if it is the only way to sign in.</p>
+            <p>Provider setup lives in the main README: create the OAuth app, set the callback to <code>https://bbaccounts.unaux.com/oauth/social/google/callback</code>, <code>https://bbaccounts.unaux.com/oauth/social/github/callback</code>, <code>https://bbaccounts.unaux.com/oauth/social/discord/callback</code>, <code>https://bbaccounts.unaux.com/oauth/social/yandex/callback</code>, or <code>https://bbaccounts.unaux.com/oauth/social/apple/callback</code>, and fill in the required credentials. See <code>OAUTH-SETUP.md</code> for each provider. Apple requires a Service ID, Team ID, Key ID, and private key. Steam is not a sign-in provider: link a Steam ID from your profile contacts instead.</p>
+        </section>
+
+        <section id="examples">
+            <h2>Examples</h2>
+            <p>Real step-by-step flows. Each example links to the API section that explains the details.</p>
+
+            <h3>1. Sign in with bbaccounts (OAuth login)</h3>
+            <p>Use this when your app needs to identify a user. Needs a project in <a href="#projects">Projects and keys</a>.</p>
+            <ol>
+                <li><strong>Create project credentials.</strong> In Developer → Projects, create a project, add your Redirect URI, and create a credential. Save <code>client_id</code> and <code>client_secret</code>. See <a href="#projects">Projects and keys</a>.</li>
+                <li><strong>Send user to bbaccounts.</strong> Redirect the browser to <a href="#authorize">Authorization request</a>:                    <div class="code-block"><pre><code>GET https://bbaccounts.unaux.com/oauth/authorize?response_type=code
+  &amp;client_id=YOUR_CLIENT_ID
+  &amp;redirect_uri=https://your-app.example/callback
+  &amp;scope=profile%20email
+  &amp;state=RANDOM_STATE
+  &amp;code_challenge=BASE64URL_SHA256_VERIFIER
+  &amp;code_challenge_method=S256</code></pre></div>
+                </li>
+                <li><strong>User approves access.</strong> bbaccounts redirects back to your <code>redirect_uri</code> with <code>?code=...&amp;state=...</code>.</li>
+                <li><strong>Exchange code for tokens on your server.</strong> See <a href="#token">Token exchange</a>:                    <div class="code-block"><pre><code>curl -X POST "https://bbaccounts.unaux.com/oauth/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code" \
+  -d "code=CODE_FROM_CALLBACK" \
+  -d "redirect_uri=https://your-app.example/callback" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET" \
+  -d "code_verifier=ORIGINAL_VERIFIER"</code></pre></div>
+                </li>
+                <li><strong>Read user profile.</strong> Use the returned <code>access_token</code> with <a href="#userinfo">User info</a>:                    <div class="code-block"><pre><code>curl "https://bbaccounts.unaux.com/oauth/userinfo" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre></div>
+                </li>
+            </ol>
+
+            <h3>2. Get public profile data (no access token)</h3>
+            <p>Use this when you only need public profile info by username. No OAuth flow needed. See <a href="#profile-api">Profile API</a>.</p>
+            <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile?username=timinside"</code></pre></div>
+            <p>Private profiles return only base fields; other fields are <code>none</code>.</p>
+
+            <h3>3. Get my own profile (with access token)</h3>
+            <p>Use this when your app has a user token and needs the token owner's own profile. See <a href="#profile-api">Profile API</a>.</p>
+            <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre></div>
+
+            <h3>4. Issue a badge to a user</h3>
+            <p>Use this when your verified project wants to reward a user. Needs <code>badges</code> scope. See <a href="#badges-api">Badges API</a>.</p>
+            <ol>
+                <li><strong>Create a badge.</strong> On the project settings page, open Badges and create one. Note its numeric <code>ID</code> (shown in the badge list).</li>
+                <li><strong>Issue it by badge ID.</strong>                    <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/badges/12/issue" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"timinside"}'</code></pre></div>
+                </li>
+                <li><strong>Check result.</strong> The response includes <code>badge_id</code>, <code>username</code>, and <code>slug</code>. Issuing again is safe.</li>
+            </ol>
+
+            <h3>5. Save user data in a storage cell</h3>
+            <p>Use this when your verified project needs to store small per-user or per-project data (up to 256KB per cell). Needs <code>cells</code> scope. See <a href="#cells-api">Cells API</a>.</p>
+            <ol>
+                <li><strong>Create or update a cell.</strong> Send <code>key</code>, <code>value</code>, and optional <code>username</code> to bind it to a user:                    <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/cells" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"save_slot_1","value":"{\"level\":3}","username":"timinside"}'</code></pre></div>
+                </li>
+                <li><strong>Read it later.</strong> List by username/key or fetch by cell ID:                    <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/cells?username=timinside&amp;key=save_slot_1" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre></div>
+                </li>
+            </ol>
+        </section>
+
+        <section id="still-not-clear">
+            <h2>Still not clear?</h2>
+            <p class="page-sub">Explain it like I am new</p>
+            <div class="card">
+                <div class="card-body prose">
+                    <p><strong>Think of bbaccounts as a &quot;Sign in&quot; button owner.</strong></p>
+                    <ol>
+                        <li>Your app does not store the user password. When someone wants to sign in, your app sends them to bbaccounts.</li>
+                        <li>The user signs in on bbaccounts and clicks Allow. bbaccounts sends the user back to your app with a temporary code.</li>
+                        <li>Your server exchanges that code for an access token. The code is like a one-time ticket; the access token is like a temporary pass.</li>
+                        <li>Your server uses the access token to ask bbaccounts who the user is. Then your app creates its own session/cookie for that user.</li>
+                    </ol>
+                    <p>Important: client_secret is a password for your app server. access_token is a temporary pass for a user. Never mix them up.</p>
+                    <p>If you only need public profile info by username, use GET /api/profile?username=... — it does not need an access token.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</main>
+
+<footer class="site-footer">
+    <p><strong>bbaccounts</strong> — an identity and sign-in service for connected projects.</p>
+    <nav class="site-footer-nav" aria-label="Legal">
+        <a href="../privacy.html">Privacy policy</a>
+        <a href="../terms.html">Terms of service</a>
+    </nav>
+</footer>
+
+<aside class="mobile-gate" data-mobile-gate hidden>
+    <div class="mobile-gate-card">
+        <img class="mobile-gate-icon" src="assets/img/icon.svg?v=2.0.17" alt="" width="56" height="56">
+        <p class="mono-label">Mobile device</p>
+        <h2>bbaccounts works best on desktop</h2>
+        <p class="mobile-gate-text">You can continue in the browser on mobile, but some pages are easier to use on a larger screen.</p>
+        <div class="mobile-gate-actions">
+            <button class="btn btn-primary btn-block" type="button" data-mobile-gate-continue>Continue anyway</button>
+        </div>
+    </div>
+</aside>
+<script src="assets/js/app.js?v=2.0.17"></script>
+</body>
+</html>

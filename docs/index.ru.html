@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" content="#0a0c10">
+    <title>Документация разработчика · bbaccounts</title>
+    <script src="assets/js/theme.js?v=2.0.17"></script>
+    <link rel="stylesheet" href="assets/css/app.css?v=2.0.17">
+    <link rel="icon" href="assets/img/icon.svg?v=2.0.17" type="image/svg+xml">
+    <link rel="shortcut icon" href="assets/img/icon.png?v=2.0.17" type="image/png">
+    <link rel="apple-touch-icon" href="assets/img/icon.png?v=2.0.17">
+</head>
+<body class="site-body" data-leave-warning="https://bbaccounts.unaux.com/leave" data-trusted-sites='["bbaccounts.unaux.com"]' data-app-version="2.0.17">
+<header class="site-header">
+    <a class="brand" href="../index.html">
+        <img class="brand-mark" src="assets/img/icon.svg?v=2.0.17" alt="" width="32" height="32">
+        <span class="brand-name">bbaccounts</span>
+    </a>
+    <nav class="site-nav" aria-label="Site">
+        <a href="docs.html">Документация</a>
+        <a href="https://bbaccounts.unaux.com/p">Проекты</a>
+        <a href="https://bbaccounts.unaux.com/u">Пользователи</a>
+        <a href="../rules.html">Правила</a>
+        <a href="../privacy.html">Конфиденциальность</a>
+        <a href="../terms.html">Условия</a>
+                <a href="https://bbaccounts.unaux.com/login">Войти</a>
+        <a class="btn btn-sm btn-primary" href="https://bbaccounts.unaux.com/register">Создать аккаунт</a>
+                                <label class="lang-select-wrap" title="Language">
+            <span class="sr-only">Language</span>
+            <select class="lang-select" onchange="if(this.value)location.href=this.value">
+                <option value="docs.html"  >EN</option>
+                <option value="docs.ru.html"  selected>RU · Beta</option>
+            </select>
+        </label>
+                        <button class="icon-btn" type="button" data-theme-toggle aria-label="Сменить тему" title="Сменить тему">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.9 19.1 1.4-1.4"/><path d="m17.7 6.3 1.4-1.4"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>        </button>
+            </nav>
+</header>
+
+
+<main class="site-main">
+        <div class="page-head">
+    <div>
+        <p class="mono-label">Разработка</p>
+        <h1>Документация</h1>
+        <p class="page-sub">Всё, что нужно для подключения клиента к bbaccounts: процесс авторизации, эндпоинты токенов, scope и ошибки.</p>
+    </div>
+</div>
+
+<div class="docs-layout">
+    <nav class="docs-nav" aria-label="Documentation">
+        <p class="mono-label">Гайды</p>
+        <a href="docs-installation.html">Установка</a>
+        <p class="mono-label">Протокол</p>
+        <a href="#overview">Обзор</a>
+        <a href="#flow">Процесс авторизации</a>
+        <a href="#direct">Прямые запросы</a>
+        <a href="#guard-api">Guard API</a>
+        <a href="#authorize">Запрос авторизации</a>
+        <a href="#token">Обмен токена</a>
+        <a href="#userinfo">Информация о пользователе</a>
+        <a href="#refresh">Обновление токена</a>
+        <a href="#revoke">Отзыв токена</a>
+        <a href="#native">Десктопные и нативные приложения</a>
+        <p class="mono-label">Справочник</p>
+        <a href="#scopes">Scope (разрешения)</a>
+        <a href="#icons">Иконки профиля</a>
+        <a href="#profile-api">Profile API</a>
+        <a href="#points-api">Points API</a>
+        <a href="#friends-api">Friends API</a>
+        <a href="#badges-api">Badges API</a>
+        <a href="#cells-api">Cells API</a>
+        <a href="#teams-api">Teams API</a>
+        <a href="#errors">Ошибки</a>
+        <a href="#projects">Проекты и ключи</a>
+        <a href="#accounts">Аккаунты и восстановление</a>
+        <a href="#social">Вход через соцсети</a>
+        <a href="#examples">Примеры</a>
+        <a href="#still-not-clear">Всё ещё не понятно?</a>
+    </nav>
+
+    <div class="docs-body">
+        <section id="overview">
+            <h2>Обзор</h2>
+            <p>bbaccounts реализует OAuth 2.0 authorization code grant с PKCE. Выдаются непрозрачные Bearer-токены, а не JWT; проверяйте их через endpoint user info. Каждый ключ привязан к одному проекту.</p>
+            <p class="callout">
+                <strong>Нужен ли свой authorization server?</strong> Нет. bbaccounts — это authorization server. Ваше приложение перенаправляет пользователя в bbaccounts, получает authorization code и обменивает его на токены на своём backend.            </p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Endpoint</th><th>Метод</th><th>Назначение</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>/oauth/authorize</code></td><td>GET</td><td>Начать авторизацию, показать вход или согласие</td></tr>
+                        <tr><td><code>/oauth/authorize</code></td><td>POST</td><td>Отправить решение на экране согласия</td></tr>
+                        <tr><td><code>/oauth/token</code></td><td>POST</td><td>Обменять code или refresh token</td></tr>
+                        <tr><td><code>/oauth/userinfo</code></td><td>GET, POST</td><td>Прочитать авторизованный профиль</td></tr>
+                        <tr><td><code>/oauth/revoke</code></td><td>POST</td><td>Отозвать access или refresh token</td></tr>
+                        <tr><td><code>/api/guard</code></td><td>GET</td><td>Прочитать секрет Guard и текущий код</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Все production URL используют <code>https://</code>. Базовый URL этого инстанса: <code>https://bbaccounts.unaux.com</code>.</p>
+        </section>
+
+        <section id="direct">
+            <h2>Прямые запросы</h2>
+            <div style="border:2px solid var(--accent,#6c8cff);background:color-mix(in srgb,var(--accent,#6c8cff) 12%,transparent);border-radius:12px;padding:18px 20px;margin:16px 0 20px;overflow-wrap:anywhere;word-break:break-word">
+                <p style="margin:0 0 8px;font-weight:700;font-size:1.08rem">Client secret — это НЕ access token</p>
+                <p style="margin:0 0 12px">Не передавайте <code>client_secret</code> как <code>Authorization: Bearer</code> или <code>?access_token=</code>. Client secret используется только при обмене authorization code на токены.</p>
+                <p style="margin:0 0 8px;font-weight:600">Как получить access token</p>
+                <ol style="margin:0;padding-left:20px;display:grid;gap:6px">
+                    <li>Создайте проект в Developer, укажите Redirect URI/scopes и создайте credential. Сохраните <code>client_id</code> и <code>client_secret</code> (для confidential-клиентов).</li>
+                    <li>Перенаправьте пользователя на <code>GET /oauth/authorize?response_type=code&amp;client_id=...&amp;redirect_uri=...&amp;scope=profile%20email&amp;state=...&amp;code_challenge=...&amp;code_challenge_method=S256</code>.</li>
+                    <li>После редиректа обменяйте <code>code</code> на сервере: <code>POST /oauth/token</code> с <code>grant_type=authorization_code</code>, <code>code</code>, <code>redirect_uri</code>, <code>client_id</code>, <code>code_verifier</code> и <code>client_secret</code> для confidential-клиентов.</li>
+                    <li>Ответ содержит <code>access_token</code> (~1 час) и <code>refresh_token</code>. Используйте токен: <code>Authorization: Bearer &lt;access_token&gt;</code> или <code>?access_token=...</code></li>
+                </ol>
+            </div>
+            <p>Когда у вас есть access token, любой endpoint — это обычный HTTPS-запрос к домену. SDK не нужен. Токен идентифицирует аккаунт; отдельно передавать ID аккаунта для token-based endpoint’ов не нужно.</p>
+            <p>Токен можно передать тремя способами (все поддерживаются):</p>
+            <div class="code-block">
+                <pre><code># 1) Authorization header (recommended)
+curl -i "https://bbaccounts.unaux.com/oauth/userinfo" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# 2) Query parameter
+curl -i "https://bbaccounts.unaux.com/oauth/userinfo?access_token=ACCESS_TOKEN"
+
+# 3) token= query parameter (alias)
+curl -i "https://bbaccounts.unaux.com/api/profile?username=timinside"</code></pre>
+            </div>
+            <p>На shared-хостинге некоторые прокси убирают заголовок <code>Authorization</code>. Если получаете <code>invalid_token</code> при валидном токене, повторите запрос с <code>?access_token=...</code> или <code>?token=...</code>. Также отправляйте User-Agent; некоторые хосты отдают anti-bot страницу запросам без него.</p>
+            <p class="field-hint" style="border-left:3px solid var(--warn,#e6a23c);padding-left:12px;margin-top:12px">
+                <strong>Ограничение unaux.com / ProFreeHost:</strong> этот хостинг может показать JavaScript anti-bot проверку (<code>aes.js</code>, ставит cookie <code>__test</code>) до запуска PHP. Обычный <code>curl</code> не выполняет JavaScript, поэтому запрос может не дойти до API bbaccounts. Простой обход: используйте Python stdlib скрипт ниже (<code>examples/python/bb-unaux.py</code>, без pip) для автоматического решения challenge, или переиспользуйте browser cookie <code>__test</code> в curl. Это ограничение хостинга, не проблема токена API.            </p>
+            <p><strong>Обходные пути для curl:</strong></p>
+            <div class="code-block">
+                <pre><code># 1) Reuse the __test cookie from your browser (works until the cookie expires/IP changes).
+#    Open https://bbaccounts.unaux.com/ in a browser, pass the challenge, then copy the __test cookie
+#    value from DevTools -> Application/Storage -> Cookies.
+curl -i -A "Mozilla/5.0" \
+  -H "Cookie: __test=PASTE_COOKIE_VALUE_HERE" \
+  "https://bbaccounts.unaux.com/oauth/userinfo?access_token=ACCESS_TOKEN"
+
+# 2) Save/reuse cookies with a cookie jar (useful after you have a valid __test cookie).
+curl -i -A "Mozilla/5.0" -c bb-cookies.txt -b bb-cookies.txt \
+  -H "Cookie: __test=PASTE_COOKIE_VALUE_HERE" \
+  "https://bbaccounts.unaux.com/api/profile?username=timinside"
+
+# 3) POST example with browser-like headers + __test cookie.
+curl -i -A "Mozilla/5.0" \
+  -H "Cookie: __test=PASTE_COOKIE_VALUE_HERE" \
+  -H "Content-Type: application/json" \
+  -X POST "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" \
+  -d '{"amount":10}'</code></pre>
+            </div>
+            <p><strong>Python (без pip, только stdlib) — решает challenge автоматически:</strong></p>
+            <p>
+                <a class="btn btn-secondary" href="https://timinside.github.io/bbaccounts/downloads/bb-unaux.py" download="bb-unaux.py">Скачать bb-unaux.py v1.0</a>
+            </p>
+            <p class="field-hint">Сохраните файл и запустите его через Python 3. Без pip-зависимостей. Также доступен как <code>examples/python/bb-unaux.py</code> в репозитории.</p>
+            <div class="code-block">
+                <pre><code># Linux / macOS
+python3 bb-unaux.py "https://bbaccounts.unaux.com/api/profile?username=timinside"
+python3 bb-unaux.py "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" POST '{"amount":10}'
+
+# Windows cmd
+python bb-unaux.py "https://bbaccounts.unaux.com/api/profile?username=timinside"
+python bb-unaux.py "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" POST "{\"amount\":10}"</code></pre>
+            </div>
+            <p>Для надёжного серверного доступа отключите challenge для <code>/api/*</code> и <code>/oauth/*</code> в панели хостинга, если это возможно, или поставьте домен/прокси, который проксирует запросы напрямую в PHP. На браузерные пользовательские сценарии это не влияет.</p>
+            <div class="code-block">
+                <pre><code># Normal examples (work when no anti-bot challenge is in front of PHP)
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/oauth/userinfo?access_token=ACCESS_TOKEN"
+
+# POST with JSON body and Authorization header
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/points" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":10}'
+
+# POST with token in query
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":-5}'</code></pre>
+            </div>
+            <p><code>/oauth/userinfo</code> использует одобренные вами scope. Endpoint’ы <code>/api/*</code> требуют соответствующий scope верифицированного проекта: <code>profile</code>, <code>points</code>, <code>friends</code>, <code>badges</code> или <code>teams</code>. Отсутствующий scope возвращает <code>insufficient_scope</code>.</p>
+        </section>
+
+        <section id="guard-api">
+            <h2>Guard API</h2>
+            <p>Scope <code>guard</code> позволяет верифицированному companion-приложению читать TOTP-секрет аккаунта и текущий код, чтобы показывать rotating code локально. Сначала включите Guard в <strong>Аккаунт → Безопасность</strong>.</p>
+            <div class="code-block">
+                <pre><code>GET https://bbaccounts.unaux.com/api/guard
+Authorization: Bearer ACCESS_TOKEN</code></pre>
+            </div>
+            <p>Ответ содержит <code>enabled</code>, <code>secret</code>, <code>code</code>, <code>digits</code>, <code>period</code> и <code>expires_in</code>. Введите показанный код в форме входа для подтверждения; каждый код принимается один раз.</p>
+            <p>На том же компьютере запуск <code>bbaccounts --service</code> позволяет странице входа запрашивать подтверждение через desktop-окно. Установите <code>guard.service_url</code> в <code>http://localhost:53683/confirm</code> в <code>config.local.php</code>; на hosted-установке оставьте пустым. Страница отправляет <code>{"email","app","ip","user_agent"}</code> и ожидает <code>{"approved":true}</code>. Отказ или недоступный сервис возвращает к полю кода.</p>
+        </section>
+
+        <section id="flow">
+            <h2>Процесс авторизации</h2>
+            <ol>
+                <li>Ваше приложение создаёт PKCE verifier и отправляет пользователя на endpoint авторизации с S256 challenge и значением <code>state</code>.</li>
+                <li>bbaccounts при необходимости выполняет вход, затем показывает экран согласия, если подходящее согласие ещё не дано.</li>
+                <li>После одобрения браузер возвращается на ваш зарегистрированный redirect URI с одноразовым <code>code</code> и вашим неизменённым <code>state</code>.</li>
+                <li>Ваш сервер обменивает code и verifier на access token и refresh token.</li>
+                <li>Вызовите <code>/oauth/userinfo</code> с access token. Обновите токен до истечения часа.</li>
+            </ol>
+            <p>Authorization code живёт 10 минут и используется один раз. Access token живёт 1 час. Refresh token живёт 30 дней и ротируется при каждом использовании.</p>
+        </section>
+
+        <section id="authorize">
+            <h2>Запрос авторизации</h2>
+            <p>Отправьте браузер на этот endpoint как навигацию верхнего уровня:</p>
+            <div class="code-block">
+                <pre><code>GET https://bbaccounts.unaux.com/oauth/authorize
+  ?client_id=YOUR_CLIENT_ID
+  &amp;redirect_uri=https%3A%2F%2Fapp.example.com%2Fcallback
+  &amp;response_type=code
+  &amp;scope=profile%20email
+  &amp;state=RANDOM_NONCE
+  &amp;code_challenge=BASE64URL_SHA256_OF_VERIFIER
+  &amp;code_challenge_method=S256</code></pre>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Параметр</th><th>Обязательный</th><th>Примечания</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>client_id</code></td><td>да</td><td>Client ID credential’а со страницы проекта</td></tr>
+                        <tr><td><code>redirect_uri</code></td><td>да</td><td>Должен точно совпадать с зарегистрированным URI</td></tr>
+                        <tr><td><code>response_type</code></td><td>да</td><td>Поддерживается только <code>code</code></td></tr>
+                        <tr><td><code>scope</code></td><td>no</td><td>По умолчанию <code>profile email</code></td></tr>
+                        <tr><td><code>state</code></td><td>рекомендуется</td><td>Возвращается без изменений; сравните со сохранённым значением</td></tr>
+                        <tr><td><code>code_challenge</code></td><td>рекомендуется</td><td>43-128 символов после base64url-кодирования. Обязательно для public-клиентов</td></tr>
+                        <tr><td><code>code_challenge_method</code></td><td>no</td><td>По умолчанию <code>S256</code>; <code>plain</code> принимается при challenge длиной 43+ символа</td></tr>
+                        <tr><td><code>prompt</code></td><td>no</td><td><code>consent</code> принудительно показывает экран согласия снова</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Отказ или некорректный запрос возвращают редирект с <code>error</code> и <code>error_description</code>. Если неверен сам client ID или redirect URI, bbaccounts покажет страницу ошибки вместо редиректа, потому что назначение нельзя считать доверенным.</p>
+        </section>
+
+        <section id="token">
+            <h2>Обмен токена</h2>
+            <p>Обменяйте code серверным запросом. Аутентифицируйтесь через HTTP Basic или передайте credentials в теле запроса.</p>
+            <div class="code-block">
+                <pre><code>POST https://bbaccounts.unaux.com/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=RETURNED_CODE
+&amp;redirect_uri=https%3A%2F%2Fapp.example.com%2Fcallback
+&amp;client_id=YOUR_CLIENT_ID
+&amp;client_secret=YOUR_CLIENT_SECRET
+&amp;code_verifier=YOUR_PKCE_VERIFIER</code></pre>
+            </div>
+            <p>Ответ:</p>
+            <div class="code-block">
+                <pre><code>{
+  "access_token": "…",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "…",
+  "scope": "profile email"
+}</code></pre>
+            </div>
+            <p>Запрос должен повторять тот же <code>redirect_uri</code>, что использовался при авторизации. Если code был выдан с challenge, verifier обязателен. Public-клиент может не передавать secret только при использовании PKCE.</p>
+        </section>
+
+        <section id="userinfo">
+            <h2>Информация о пользователе</h2>
+            <p>
+                Returns the account that owns the access token. You do not pass a username or account ID here; the token already identifies the account.
+            </p>
+            <div class="code-block">
+                <pre><code># Recommended: Authorization header
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/oauth/userinfo" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Also works: token in URL
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/oauth/userinfo?access_token=ACCESS_TOKEN"
+
+# Also works: POST
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/oauth/userinfo" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre>
+            </div>
+            <p>Поля зависят от выданных scope:</p>
+            <div class="code-block">
+                <pre><code>{
+  "sub": "42",
+  "display_name": "Example User",
+  "username": "example_user",
+  "description": "Builds small tools.",
+  "avatar_url": "https://bbaccounts.unaux.com/avatar/42.svg",
+  "email": "user@example.com",
+  "email_verified": false,
+  "social": { "github": "octocat" },
+  "updated_at": "2026-11-09T12:00:00+00:00"
+}</code></pre>
+            </div>
+            <p><code>sub</code> — стабильный ID аккаунта. Храните его как внешний идентификатор; email может измениться. <code>email_verified</code> всегда false в этом инстансе, потому что отправка email не настроена.</p>
+            <p><code>social</code> сопоставляет каждого подключённого провайдера с его username. Главный переключатель — <strong>Профиль → Приватность</strong>, а каждый провайдер включается отдельно в <a href="https://bbaccounts.unaux.com/account/connections?tab=social">Аккаунт → Подключения</a>.</p>
+        </section>
+
+        <section id="refresh">
+            <h2>Обновление токена</h2>
+            <div class="code-block">
+                <pre><code>POST https://bbaccounts.unaux.com/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token
+&amp;refresh_token=CURRENT_REFRESH_TOKEN
+&amp;client_id=YOUR_CLIENT_ID
+&amp;client_secret=YOUR_CLIENT_SECRET</code></pre>
+            </div>
+            <p>Ответ имеет тот же формат, что и обмен code. Оба токена заменяются: сохраните новый refresh token, потому что старый перестанет работать. Неудачный refresh означает, что пользователь должен авторизоваться снова.</p>
+        </section>
+
+        <section id="revoke">
+            <h2>Отзыв токена</h2>
+            <div class="code-block">
+                <pre><code>POST https://bbaccounts.unaux.com/oauth/revoke
+Content-Type: application/x-www-form-urlencoded
+
+token=ACCESS_OR_REFRESH_TOKEN
+&amp;client_id=YOUR_CLIENT_ID
+&amp;client_secret=YOUR_CLIENT_SECRET</code></pre>
+            </div>
+            <p>Отзыв access token или его refresh token инвалидирует пару. Пользователи также могут отозвать весь проект на странице авторизованных приложений — это сразу удалит согласие, токены и неиспользованные коды.</p>
+        </section>
+
+        <section id="native">
+            <h2>Десктопные и нативные приложения</h2>
+            <p>Desktop, CLI и single-page приложения не могут хранить client secret. Создайте credential с включённым <strong>Public client</strong>, используйте PKCE с <code>S256</code> и не передавайте <code>client_secret</code> при обмене code и обновлении токенов.</p>
+            <p>Открывайте страницу авторизации в системном браузере, а не во встроенном web view. Слушайте loopback-адрес и зарегистрируйте этот точный URI в проекте. Фиксированный порт упрощает точное совпадение; в примере ниже используется <code>http://localhost:53682/callback</code>.</p>
+            <div class="code-block">
+                <pre><code>POST https://bbaccounts.unaux.com/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=RETURNED_CODE
+&amp;redirect_uri=http%3A%2F%2Flocalhost%3A53682%2Fcallback
+&amp;client_id=PUBLIC_CLIENT_ID
+&amp;code_verifier=YOUR_PKCE_VERIFIER</code></pre>
+            </div>
+            <p>Храните access и refresh token’ы в хранилище credentials ОС: DPAPI или Credential Manager в Windows, Secret Service в Linux. Пример в <code>examples/desktop</code> — Windows-only WinForms <code>net10.0-windows</code> приложение с <code>HttpListener</code> и DPAPI. Папки <code>examples/php-web</code> и <code>examples/python</code> содержат минимальные web-примеры без зависимостей.</p>
+        </section>
+
+        <section id="scopes">
+            <h2>Scope (разрешения)</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Scope</th><th>Что даёт</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>profile</code></td><td><code>display_name</code>, <code>username</code>, <code>description</code>, <code>avatar_url</code> и <code>social</code> для провайдеров, которые аккаунт разрешил показывать</td></tr>
+                        <tr><td><code>email</code></td><td><code>email</code>, <code>email_verified</code></td></tr>
+                        <tr><td><code>guard</code></td><td>Чтение секрета Guard и текущего 6-значного кода через Guard API (только верифицированные проекты)</td></tr>
+                        <tr><td><code>points</code></td><td>Чтение и изменение баланса очков аккаунта через Points API (только верифицированные проекты)</td></tr>
+                        <tr><td><code>friends</code></td><td>Чтение и управление друзьями аккаунта через Friends API (только верифицированные проекты)</td></tr>
+                        <tr><td><code>badges</code></td><td>Создание custom-бейджей и выдача их аккаунтам через Badges API (только верифицированные проекты)</td></tr>
+                        <tr><td><code>teams</code></td><td>Чтение членства и подписок аккаунта в командах через Teams API (только верифицированные проекты)</td></tr>
+                        <tr><td><code>cells</code></td><td>Создание, чтение, обновление и удаление storage cells проекта через Cells API (только верифицированные проекты)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Запрос любого другого scope возвращает <code>invalid_scope</code>. Если <code>scope</code> не указан, запрашиваются стандартные scope; <code>guard</code> нужно запрашивать явно.</p>
+        </section>
+
+        <section id="icons">
+            <h2>Иконки профиля</h2>
+            <p>Маленькие иконки появляются сразу после отображаемого имени. Наведите или сфокусируйтесь, чтобы увидеть значение.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Иконка</th><th>Значение</th></tr></thead>
+                    <tbody>
+                        <tr><td>Золотая галочка</td><td>У профиля или проекта есть золотая галочка верификации, выданная администратором.</td></tr>
+                        <tr><td>Синяя галочка</td><td>Обычная галочка верификации, выданная администратором.</td></tr>
+                        <tr><td>Щит (красный)</td><td>Роль администратора.</td></tr>
+                        <tr><td>Скобки кода</td><td>Роль разработчика.</td></tr>
+                        <tr><td>Щит (оранжевый)</td><td>Роль тестера.</td></tr>
+                        <tr><td>Щит (синий)</td><td>Роль модератора.</td></tr>
+                        <tr><td>Красный восклицательный знак</td><td>Аккаунт забанен до даты в подсказке.</td></tr>
+                        <tr><td>Синяя снежинка</td><td>Аккаунт заморожен до даты в подсказке.</td></tr>
+                        <tr><td>Оранжевый треугольник</td><td>Администратор оставил предупреждение. Полный текст отображается в блоке предупреждения в профиле и как эта иконка рядом с владельцем на странице входа проекта.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Иконки ролей владелец аккаунта может скрыть в настройках приватности. Верификация, статус и предупреждения показываются всегда.</p>
+        </section>
+
+        <section id="points-api">
+            <h2>Points API</h2>
+            <p>Чтение или изменение баланса очков аккаунта-владельца токена. Токен идентифицирует аккаунт; ID аккаунта передавать не нужно. Требуется верифицированный проект и scope <code>points</code>.</p>
+            <div class="code-block">
+                <pre><code># Read balance
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/points" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Add 10 points
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/points" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":10}'
+
+# Spend 5 points (token in URL also works)
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/points?access_token=ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":-5}'</code></pre>
+            </div>
+            <p>
+                Ответ: <code>{"points": 42}</code>. Amount должен быть ненулевым целым числом от −10 000 до 10 000. Баланс не опускается ниже нуля.            </p>
+        </section>
+
+        <section id="friends-api">
+            <h2>Friends API</h2>
+            <p>Управляйте списком друзей владельца токена. Токен идентифицирует аккаунт. Требуется верифицированный проект и scope <code>friends</code>.</p>
+            <div class="code-block">
+                <pre><code># List friends
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/friends" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Send friend request by username
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/friends" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"timinside"}'
+
+# Remove friend / cancel request (42 is the friend's account ID)
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/friends/42/remove" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre>
+            </div>
+            <p><code>GET</code> возвращает <code>count</code>, <code>limit</code>, <code>friends</code>, <code>incoming</code> и <code>outgoing</code>. <code>POST /api/friends</code> возвращает <code>state</code>: <code>sent</code>, <code>pending</code>, <code>accepted</code> или <code>friends</code>.</p>
+        </section>
+
+        <section id="profile-api">
+            <h2>Profile API</h2>
+            <p>Прочитать публичный профиль. Передайте <code>username</code>, чтобы выбрать аккаунт. Без токена возвращаются только публичные базовые данные профиля. С токеном верифицированного проекта (scope <code>profile</code>) токен определяет, кто запрашивает; не указывайте <code>username</code>, чтобы прочитать профиль владельца токена.</p>
+            <div class="code-block">
+                <pre><code># Read a public profile without an access token
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile?username=timinside"
+
+# Read your own profile (account identified by token)
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Read another account with token (friend/self can see full private fields)
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile?username=timinside" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre>
+            </div>
+            <p>Приватные профили возвращают только аватар, баннер, фон, отображаемое имя и username; остальные поля — <code>none</code>, если зритель не владелец и не принятый друг. Неизвестные аккаунты возвращают <code>404</code>.</p>
+        </section>
+
+        <section id="badges-api">
+            <h2>Badges API</h2>
+            <p>Создавайте и выдавайте бейджи для вашего верифицированного проекта. Требуется scope <code>badges</code>. Бейджи создаются на странице настроек проекта или через этот API. У каждого бейджа есть числовой <code>id</code> — используйте его для выдачи.</p>
+            <div class="code-block">
+                <pre><code># List project badges
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/badges" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Create a badge
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/badges" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Beta Tester","description":"Tested the beta"}'
+
+# Issue badge by badge ID to a user by username
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/badges/12/issue" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"timinside"}'</code></pre>
+            </div>
+            <p>Повторная выдача бейджа безопасна. Проект может выдавать только свои бейджи. Endpoint выдачи принимает ID бейджа в URL.</p>
+        </section>
+
+        <section id="cells-api">
+            <h2>Cells API</h2>
+            <p>Храните небольшие данные проекта в cells. Требуется верифицированный проект и scope <code>cells</code>. У каждой cell есть числовой <code>id</code>, <code>key</code> и <code>value</code> до 256KB. Cell может быть привязана к проекту или к пользователю (<code>username</code>).</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Endpoint</th><th>Метод</th><th>Назначение</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>/api/cells</code></td><td>GET</td><td>Список cells (фильтр по <code>username</code>, <code>key</code>, <code>scope=project</code>)</td></tr>
+                        <tr><td><code>/api/cells</code></td><td>POST</td><td>Создать или обновить cell по ключу (upsert)</td></tr>
+                        <tr><td><code>/api/cells/{id}</code></td><td>GET</td><td>Прочитать cell вместе со значением</td></tr>
+                        <tr><td><code>/api/cells/{id}</code></td><td>PUT/POST</td><td>Обновить значение cell</td></tr>
+                        <tr><td><code>/api/cells/{id}</code></td><td>DELETE</td><td>Удалить cell</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="code-block">
+                <pre><code># Create/update a project-scoped cell
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/cells" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"welcome_message","value":"Hello!"}'
+
+# Create/update a user-bound cell
+curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/cells" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"save_slot_1","value":"{\"level\":3}","username":"timinside"}'
+
+# List cells for a user
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/cells?username=timinside" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Read / update / delete by cell ID
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/cells/42" -H "Authorization: Bearer ACCESS_TOKEN"
+curl -i -A "MyApp/1.0" -X PUT "https://bbaccounts.unaux.com/api/cells/42" \
+  -H "Authorization: Bearer ACCESS_TOKEN" -H "Content-Type: application/json" \
+  -d '{"value":"new value"}'
+curl -i -A "MyApp/1.0" -X DELETE "https://bbaccounts.unaux.com/api/cells/42" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre>
+            </div>
+            <p>Ответы списка не содержат <code>value</code>; загрузите cell по ID, чтобы прочитать значение. Project-bound и user-bound cell’ы с одинаковым ключом — разные cell’ы.</p>
+        </section>
+
+        <section id="teams-api">
+            <h2>Teams API</h2>
+            <p>Прочитать команды владельца токена. Требуется верифицированный проект и scope <code>teams</code>. Токен идентифицирует аккаунт.</p>
+            <div class="code-block">
+                <pre><code>curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/teams" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# Token in URL also works
+curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/teams?access_token=ACCESS_TOKEN"</code></pre>
+            </div>
+            <p>Возвращает <code>count</code> и <code>teams</code>. Каждая команда включает <code>id</code>, <code>name</code>, <code>slug</code>, вашу <code>role</code>, <code>subscribed</code> и <code>members</code>.</p>
+        </section>
+
+        <section id="errors">
+            <h2>Ошибки</h2>
+            <p>Ошибки token endpoint’а возвращают JSON с HTTP-статусом и такими полями:</p>
+            <div class="code-block">
+                <pre><code>{ "error": "invalid_grant", "error_description": "The authorization code is invalid or expired." }</code></pre>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Error</th><th>Значение</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>invalid_request</code></td><td>Обязательный параметр отсутствует или некорректен</td></tr>
+                        <tr><td><code>invalid_client</code></td><td>Неизвестный client, неверный secret или отсутствует аутентификация клиента</td></tr>
+                        <tr><td><code>invalid_grant</code></td><td>Code или refresh token неверен, истёк или уже использован</td></tr>
+                        <tr><td><code>invalid_scope</code></td><td>Запрошенный scope не поддерживается</td></tr>
+                        <tr><td><code>unsupported_grant_type</code></td><td>Не <code>authorization_code</code> или <code>refresh_token</code></td></tr>
+                        <tr><td><code>invalid_token</code></td><td>Bearer-токен отклонён endpoint’ом user info</td></tr>
+                        <tr><td><code>slow_down</code></td><td>Слишком много запросов токена с одного IP</td></tr>
+                        <tr><td><code>access_denied</code></td><td>Пользователь нажал Deny</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2>Проекты и ключи</h2>
+            <div style="border:2px solid var(--accent,#6c8cff);background:color-mix(in srgb,var(--accent,#6c8cff) 12%,transparent);border-radius:12px;padding:18px 20px;margin:16px 0 20px;overflow-wrap:anywhere;word-break:break-word">
+                <p style="margin:0 0 8px;font-weight:700;font-size:1.08rem">Для чего вкладка Projects</p>
+                <p style="margin:0 0 10px">Вкладка <strong>Developer → Projects</strong> — место, где вы настраиваете и управляете приложениями, использующими bbaccounts OAuth/API.</p>
+                <ul style="margin:0;padding-left:20px;display:grid;gap:6px">
+                    <li><strong>Создайте проект</strong> — зарегистрируйте приложение/игру/сервис, который будет авторизовать пользователей через bbaccounts.</li>
+                    <li><strong>Redirect URI</strong> — добавьте точные callback URL, куда bbaccounts вернёт пользователя после авторизации.</li>
+                    <li><strong>Client credentials</strong> — создавайте именованные ключи; получите <code>client_id</code> и одноразовый <code>client_secret</code> для обмена OAuth-токенов.</li>
+                    <li><strong>Брендинг/настройки</strong> — редактируйте название проекта, описание, логотип и другие детали, видимые пользователям.</li>
+                    <li><strong>Управляйте доступом</strong> — отзывайте ключ, ротируйте credentials или удаляйте проект, когда он больше не нужен.</li>
+                </ul>
+            </div>
+            <p>Доступ разработчика включается для аккаунта вручную. После включения страница разработчика позволяет создавать проекты, редактировать брендинг, регистрировать redirect URI и выпускать именованные client credentials. У проекта может быть до десяти активных credentials, чтобы можно было ротировать один без поломки другой интеграции.</p>
+            <p>Обычный credential получает secret, который показывается один раз при создании; если он потерян — отзовите ключ и создайте новый. У <strong>public client</strong> секрета нет вообще, и он обязан использовать PKCE. Используйте public-клиенты для desktop, CLI и browser-only приложений. Удаление проекта каскадно удаляет redirect URI, credentials, authorization codes, токены и согласия пользователей.</p>
+        </section>
+
+        <section id="accounts">
+            <h2>Аккаунты и восстановление</h2>
+            <p>Аккаунты используют email и пароль. Поскольку этот инстанс не отправляет email, здесь нет ссылки подтверждения и письма для сброса. Каждый аккаунт получает 10 одноразовых recovery codes при регистрации; их можно пересоздать на странице безопасности с текущим паролем. Код сбрасывает пароль и расходуется при использовании.</p>
+            <p>Смена пароля завершает все остальные сессии. Сессии живут 30 дней и продлеваются при активности. Пользователи могут просматривать и отзывать устройства на странице безопасности, а также переключаться между аккаунтами, уже вошедшими на этом устройстве, без пароля. Каждый аккаунт может опубликовать публичный профиль по адресу <code>/u/{username}</code> с уникальным <code>@username</code>, коротким описанием, ролями, выбранными соцпровайдерами и до трёх витрин: текст, активные проекты, Badge Earned, медиа, GitHub-репозитории, ссылки, Friends или Best friends. Badge Earned и Friends всегда присутствуют и могут быть только выключены, но не удалены. Медиа — это загрузка изображения или видео и стоит 20 очков каждый раз; удаление не возвращает очки. Заработанные бейджи появляются только внутри витрины Badge Earned, как artwork с именем при наведении. Упоминание <code>@username</code> в описании или витрине ведёт на профиль.</p>
+            <p>Другие вошедшие пользователи могут лайкнуть профиль один раз. Лайк даёт 2 очков владельцу профиля, а каждая принятая дружба даёт 5 очков обоим. 15 очков покупают один дополнительный слот витрины (до десяти), или 15 очков покупают 10 дополнительных слотов друзей (до тридцати; базовый лимит — двадцать). Правила опубликованы на <code>/rules</code>; блокировки, rate limits, уникальность идентичностей и защита от self-like применяются без участия администратора.</p>
+        </section>
+
+        <section id="social">
+            <h2>Вход через соцсети</h2>
+            <p>Вход через Google, GitHub и Discord появляется на странице входа, когда в инстансе настроены их credentials в <code>private/config/config.php</code>. Каждый провайдер привязывается только к существующему аккаунту, если совпадает подтверждённый email. Социальный вход никогда не создаёт аккаунт: сначала зарегистрируйтесь по email, затем подключите провайдера.</p>
+            <p>Подключённые провайдеры не заменяют пароль. Установите пароль в Безопасности, если регистрировались по email и паролю. Провайдера нельзя отключить, если это единственный способ входа.</p>
+            <p>Настройка провайдеров описана в основном README: создайте OAuth-приложение, укажите callback <code>https://bbaccounts.unaux.com/oauth/social/google/callback</code>, <code>https://bbaccounts.unaux.com/oauth/social/github/callback</code>, <code>https://bbaccounts.unaux.com/oauth/social/discord/callback</code>, <code>https://bbaccounts.unaux.com/oauth/social/yandex/callback</code> или <code>https://bbaccounts.unaux.com/oauth/social/apple/callback</code> и заполните нужные credentials. См. <code>OAUTH-SETUP.md</code> для каждого провайдера. Apple требует Service ID, Team ID, Key ID и private key. Steam не является провайдером входа: привяжите Steam ID в контактах профиля.</p>
+        </section>
+
+        <section id="examples">
+            <h2>Примеры</h2>
+            <p>Реальные пошаговые сценарии. Каждый пример ссылается на раздел API с подробностями.</p>
+
+            <h3>1. Вход через bbaccounts (OAuth)</h3>
+            <p>Используйте, когда приложению нужно идентифицировать пользователя. Нужен проект в <a href="#projects">Проекты и ключи</a>.</p>
+            <ol>
+                <li><strong>Создайте credentials проекта.</strong> В Developer → Projects создайте проект, добавьте Redirect URI и создайте credential. Сохраните <code>client_id</code> и <code>client_secret</code>. См. <a href="#projects">Проекты и ключи</a>.</li>
+                <li><strong>Отправьте пользователя в bbaccounts.</strong> Перенаправьте браузер на <a href="#authorize">Запрос авторизации</a>:                    <div class="code-block"><pre><code>GET https://bbaccounts.unaux.com/oauth/authorize?response_type=code
+  &amp;client_id=YOUR_CLIENT_ID
+  &amp;redirect_uri=https://your-app.example/callback
+  &amp;scope=profile%20email
+  &amp;state=RANDOM_STATE
+  &amp;code_challenge=BASE64URL_SHA256_VERIFIER
+  &amp;code_challenge_method=S256</code></pre></div>
+                </li>
+                <li><strong>Пользователь одобряет доступ.</strong> bbaccounts перенаправляет обратно на ваш <code>redirect_uri</code> с <code>?code=...&amp;state=...</code>.</li>
+                <li><strong>Обменяйте code на токены на вашем сервере.</strong> См. <a href="#token">Обмен токена</a>:                    <div class="code-block"><pre><code>curl -X POST "https://bbaccounts.unaux.com/oauth/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code" \
+  -d "code=CODE_FROM_CALLBACK" \
+  -d "redirect_uri=https://your-app.example/callback" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET" \
+  -d "code_verifier=ORIGINAL_VERIFIER"</code></pre></div>
+                </li>
+                <li><strong>Прочитайте профиль пользователя.</strong> Используйте полученный <code>access_token</code> с <a href="#userinfo">User info</a>:                    <div class="code-block"><pre><code>curl "https://bbaccounts.unaux.com/oauth/userinfo" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre></div>
+                </li>
+            </ol>
+
+            <h3>2. Получить публичные данные профиля (без access token)</h3>
+            <p>Используйте, когда нужен только публичный профиль по username. OAuth flow не нужен. См. <a href="#profile-api">Profile API</a>.</p>
+            <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile?username=timinside"</code></pre></div>
+            <p>Приватные профили возвращают только базовые поля; остальные поля — <code>none</code>.</p>
+
+            <h3>3. Получить свой профиль (с access token)</h3>
+            <p>Используйте, когда у приложения есть токен пользователя и нужен профиль владельца токена. См. <a href="#profile-api">Profile API</a>.</p>
+            <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/profile" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre></div>
+
+            <h3>4. Выдать бейдж пользователю</h3>
+            <p>Используйте, когда верифицированный проект хочет наградить пользователя. Нужен scope <code>badges</code>. См. <a href="#badges-api">Badges API</a>.</p>
+            <ol>
+                <li><strong>Создайте бейдж.</strong> На странице настроек проекта откройте Badges и создайте бейдж. Запомните его числовой <code>ID</code> (показан в списке бейджей).</li>
+                <li><strong>Выдайте по ID бейджа.</strong>                    <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/badges/12/issue" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"timinside"}'</code></pre></div>
+                </li>
+                <li><strong>Проверьте результат.</strong> Ответ содержит <code>badge_id</code>, <code>username</code> и <code>slug</code>. Повторная выдача безопасна.</li>
+            </ol>
+
+            <h3>5. Сохранить данные пользователя в storage cell</h3>
+            <p>Используйте, когда верифицированному проекту нужно хранить небольшие per-user или per-project данные (до 256KB на cell). Нужен scope <code>cells</code>. См. <a href="#cells-api">Cells API</a>.</p>
+            <ol>
+                <li><strong>Создайте или обновите cell.</strong> Отправьте <code>key</code>, <code>value</code> и необязательный <code>username</code>, чтобы привязать к пользователю:                    <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/api/cells" \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key":"save_slot_1","value":"{\"level\":3}","username":"timinside"}'</code></pre></div>
+                </li>
+                <li><strong>Прочитайте позже.</strong> Получите список по username/key или загрузите cell по ID:                    <div class="code-block"><pre><code>curl -i -A "MyApp/1.0" "https://bbaccounts.unaux.com/api/cells?username=timinside&amp;key=save_slot_1" \
+  -H "Authorization: Bearer ACCESS_TOKEN"</code></pre></div>
+                </li>
+            </ol>
+        </section>
+
+        <section id="still-not-clear">
+            <h2>Всё ещё не понятно?</h2>
+            <p class="page-sub">Объясни как для чайника</p>
+            <div class="card">
+                <div class="card-body prose">
+                    <p><strong>Думай о bbaccounts как о владельце кнопки «Войти».</strong></p>
+                    <ol>
+                        <li>Твоё приложение не хранит пароль пользователя. Когда кто-то хочет войти, твоё приложение отправляет его в bbaccounts.</li>
+                        <li>Пользователь входит в bbaccounts и нажимает «Разрешить». bbaccounts возвращает пользователя в твоё приложение с временным кодом.</li>
+                        <li>Твой сервер обменивает этот код на access token. Код — как одноразовый билет; access token — как временный пропуск.</li>
+                        <li>Твой сервер использует access token, чтобы спросить у bbaccounts, кто этот пользователь. Потом твоё приложение создаёт свою сессию/cookie для этого пользователя.</li>
+                    </ol>
+                    <p>Важно: client_secret — это пароль сервера твоего приложения. access_token — временный пропуск пользователя. Никогда не путай их.</p>
+                    <p>Если тебе нужна только публичная информация профиля по username, используй GET /api/profile?username=... — access token для этого не нужен.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</main>
+
+<footer class="site-footer">
+    <p><strong>bbaccounts</strong> — сервис идентификации и входа для подключённых проектов.</p>
+    <nav class="site-footer-nav" aria-label="Legal">
+        <a href="../privacy.html">Политика конфиденциальности</a>
+        <a href="../terms.html">Условия использования</a>
+    </nav>
+</footer>
+
+<aside class="mobile-gate" data-mobile-gate hidden>
+    <div class="mobile-gate-card">
+        <img class="mobile-gate-icon" src="assets/img/icon.svg?v=2.0.17" alt="" width="56" height="56">
+        <p class="mono-label">Мобильное устройство</p>
+        <h2>bbaccounts лучше работает на десктопе</h2>
+        <p class="mobile-gate-text">Вы можете продолжить в браузере на мобильном, но некоторые страницы удобнее использовать на большом экране.</p>
+        <div class="mobile-gate-actions">
+            <button class="btn btn-primary btn-block" type="button" data-mobile-gate-continue>Продолжить всё равно</button>
+        </div>
+    </div>
+</aside>
+<script src="assets/js/app.js?v=2.0.17"></script>
+</body>
+</html>
