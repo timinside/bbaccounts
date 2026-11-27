@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS accounts (
     display_name VARCHAR(80) NOT NULL,
     username VARCHAR(30) NULL,
     description VARCHAR(280) NULL,
+    status_text VARCHAR(80) NULL,
+    status_icon VARCHAR(32) NULL,
     warning_text VARCHAR(255) NULL,
     avatar_type ENUM('initials', 'preset', 'upload') NOT NULL DEFAULT 'initials',
     avatar_value VARCHAR(120) NULL,

@@ -1547,6 +1547,8 @@ body.confirm-open { overflow: hidden; }
 
 .showcase-grid {
     display: grid;
+    position: relative;
+    z-index: 0;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
     margin-top: 20px;
@@ -1558,7 +1560,7 @@ body.confirm-open { overflow: hidden; }
 .showcase-card-wide { grid-column: 1 / -1; }
 .showcase-body { color: var(--muted); font-size: 14px; white-space: pre-line; overflow-wrap: anywhere; }
 .showcase-card .card-head h2 { overflow-wrap: anywhere; }
-.profile-top { display: grid; gap: 20px; align-items: stretch; }
+.profile-top { display: grid; gap: 20px; align-items: stretch; position: relative; z-index: 50; }
 .showcase-row-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 .showcase-width-form { display: flex; align-items: center; gap: 6px; }
 .showcase-width-form select { width: auto; }
@@ -1759,7 +1761,7 @@ body.mobile-gate-open { overflow: hidden; }
 .level-info strong { color: var(--text); }
 .provider-mark-wrap { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); flex: none; }
 
-.profile-card { overflow: visible; }
+.profile-card { overflow: visible; position: relative; z-index: 30; }
 .profile-card .card-body { position: relative; }
 .profile-actions { position: absolute; top: 16px; right: 22px; z-index: 5; margin: 0; }
 .profile-actions-left { left: 22px; right: auto; }
@@ -1768,7 +1770,7 @@ body.mobile-gate-open { overflow: hidden; }
 .profile-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .profile-banner.has-blur { background: var(--surface-2); }
 .profile-banner.has-blur img { filter: blur(var(--profile-blur, 0px)); transform: scale(calc(1.08 + (var(--profile-blur, 0px) / 70))); transform-origin: center; }
-.profile-banner + .card-body { position: relative; z-index: 1; }
+.profile-banner + .card-body { position: relative; z-index: 20; }
 .profile-banner + .card-body .profile-head { align-items: flex-start; }
 .profile-banner + .card-body .profile-head > .avatar { position: relative; z-index: 1; margin-top: -48px; border: 4px solid var(--surface); background: var(--surface); }
 .profile-banner-preview { width: 100%; max-height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); display: block; }
@@ -1794,6 +1796,21 @@ body.mobile-gate-open { overflow: hidden; }
 .studio-showcase-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin-bottom: 10px; }
 .studio-subform { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
 .studio-avatar-wrap { position: relative; flex: none; }
+.profile-status-edit > summary::-webkit-details-marker { display: none; }
+.profile-status-edit > summary::marker { content: ""; }
+.profile-status-bubble--view:hover,
+.profile-status-bubble--view:focus-within,
+.profile-status-bubble--toggle:hover,
+.profile-status-bubble--toggle:focus-within,
+.profile-status-edit:hover .profile-status-bubble--toggle,
+.profile-status-edit[open] .profile-status-bubble--toggle { white-space: normal !important; max-width: 320px !important; min-width: 180px !important; align-items: flex-end !important; }
+.profile-status-bubble--view:hover .profile-status-text,
+.profile-status-bubble--view:focus-within .profile-status-text,
+.profile-status-bubble--toggle:hover .profile-status-text,
+.profile-status-bubble--toggle:focus-within .profile-status-text,
+.profile-status-edit:hover .profile-status-text,
+.profile-status-edit:focus-within .profile-status-text,
+.profile-status-edit[open] .profile-status-text { display: inline !important; max-width: 260px !important; overflow: visible !important; text-overflow: unset !important; white-space: normal !important; overflow-wrap: anywhere; }
 .studio-edit-button { position: absolute; top: 0; right: 0; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--accent); cursor: pointer; }
 .studio-edit-button svg { width: 15px; height: 15px; }
 .profile-banner .studio-edit-button { top: 10px; right: 10px; }

@@ -295,6 +295,30 @@ final class AccountController extends Controller
         $this->redirect($next !== '' ? $next : '/u/' . (string) ($account['username'] ?? $account['id']));
     }
 
+    public function updateInlineStatus(): void
+    {
+        $this->csrf();
+        $account = $this->auth();
+        $statusText = trim((string) $this->input('status_text'));
+        $statusIcon = trim((string) $this->input('status_icon'));
+        if (mb_strlen($statusText) > 80) {
+            $this->fail('Use at most 80 characters.');
+        } elseif (contains_link($statusText)) {
+            $this->fail('Links and domains are not allowed in status.');
+        } elseif (mb_strlen($statusIcon) > 32) {
+            $this->fail('Keep the status icon short.');
+        } else {
+            User::update((int) $account['id'], [
+                'status_text' => $statusText !== '' ? $statusText : null,
+                'status_icon' => $statusIcon !== '' ? $statusIcon : null,
+            ]);
+            Audit::log('account.status_updated', (int) $account['id'], null, 'account', (int) $account['id']);
+            $this->succeed('Status saved.');
+        }
+        $next = safe_next_path($this->input('next'));
+        $this->redirect($next !== '' ? $next : '/u/' . (string) ($account['username'] ?? $account['id']));
+    }
+
     public function switchAccount(): void
     {
         $account = $this->auth();
@@ -514,6 +538,12 @@ final class AccountController extends Controller
         $description = array_key_exists('description', $_POST)
             ? trim((string) $this->input('description'))
             : (string) ($account['description'] ?? '');
+        $statusText = array_key_exists('status_text', $_POST)
+            ? trim((string) $this->input('status_text'))
+            : (string) ($account['status_text'] ?? '');
+        $statusIcon = array_key_exists('status_icon', $_POST)
+            ? trim((string) $this->input('status_icon'))
+            : (string) ($account['status_icon'] ?? '');
         $avatar = (string) $this->input('avatar', 'initials');
         $emoji = trim((string) $this->input('avatar_emoji'));
         $color = strtolower((string) $this->input('avatar_color', ''));
@@ -541,6 +571,14 @@ final class AccountController extends Controller
                 Ticket::create((int) $account['id'], 'help', 'Automated moderation report: attempted to put a link/domain in profile description. Blocked content: "' . mb_substr($description, 0, 500) . '"');
             }
             $errors['description'] = 'Links and domains are not allowed in profile description.';
+        }
+        if (mb_strlen($statusText) > 80) {
+            $errors['status_text'] = 'Keep the status under 80 characters.';
+        } elseif (contains_link($statusText)) {
+            $errors['status_text'] = 'Links and domains are not allowed in status.';
+        }
+        if (mb_strlen($statusIcon) > 32) {
+            $errors['status_icon'] = 'Keep the status icon short.';
         }
 
         $legacyEmoji = [
@@ -697,6 +735,8 @@ final class AccountController extends Controller
                 'display_name' => $name,
                 'username' => $username,
                 'description' => $description,
+                'status_text' => $statusText,
+                'status_icon' => $statusIcon,
                 'avatar_color' => $color,
                 'avatar' => $avatar,
                 'avatar_emoji' => $emoji,
@@ -750,6 +790,8 @@ final class AccountController extends Controller
             'display_name' => $name,
             'username' => $username,
             'description' => $description !== '' ? $description : null,
+            'status_text' => $statusText !== '' ? $statusText : null,
+            'status_icon' => $statusIcon !== '' ? $statusIcon : null,
             'avatar_type' => $avatarType,
             'avatar_value' => $avatarValue,
             'avatar_color' => $avatarColor,

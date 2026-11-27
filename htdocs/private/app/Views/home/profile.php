@@ -12,6 +12,8 @@ $isOwner = $viewer !== null && (int) $viewer['id'] === (int) ($profile['id'] ?? 
 $canReport = $viewer !== null && ($isOwner || (int) ($viewer['is_admin'] ?? 0) === 1 || (int) ($viewer['is_moderator'] ?? 0) === 1);
 $roles = profile_roles($profile);
 $description = trim((string) ($profile['description'] ?? ''));
+$statusText = trim((string) ($profile['status_text'] ?? ''));
+$statusIcon = trim((string) ($profile['status_icon'] ?? ''));
 $warningText = trim((string) ($profile['warning_text'] ?? ''));
 $handle = trim((string) ($profile['username'] ?? ''));
 $likeCount = (int) ($likeCount ?? 0);
@@ -35,6 +37,8 @@ $fullView = (bool) ($fullView ?? true);
 if (!$fullView) {
     $roles = [];
     $description = '';
+    $statusText = '';
+    $statusIcon = '';
     $warningText = '';
     $contacts = [];
 }
@@ -62,7 +66,7 @@ $studio = $studioAllowed && !$preview;
 <?php include BBA_APP . '/Views/partials/profile-studio.php'; ?>
 <?php endif; ?>
 
-<div class="profile-top">
+<div class="profile-top" style="position:relative;z-index:50">
 <section class="card profile-card<?= $studio ? ' profile-studio' : '' ?>"<?= $cardStyle ?>>
 
     <?php if (!$bannerDisabled && ($banner !== '' || preg_match('/^#[0-9a-f]{6}$/i', $bannerColor) === 1)): ?>
@@ -129,6 +133,36 @@ $studio = $studioAllowed && !$preview;
         <div class="profile-head">
             <div class="studio-avatar-wrap">
                 <img class="avatar avatar-xl" src="<?= e(avatar_url($profile)) ?>" alt="" width="96" height="96"<?= avatar_style($profile) ?>>
+                <?php $statusIconShow = $statusIcon !== '' ? $statusIcon : ($statusText !== '' ? '💬' : '😊'); $statusHas = $statusText !== '' || $statusIcon !== ''; ?>
+                <style>.profile-status-edit:hover .profile-status-text,.profile-status-edit:focus-within .profile-status-text,.profile-status-edit[open] .profile-status-text,.profile-status-bubble--view:hover .profile-status-text,.profile-status-bubble--view:focus-within .profile-status-text{display:inline!important;max-width:260px!important;overflow:visible!important;text-overflow:unset!important;white-space:normal!important;overflow-wrap:anywhere}.profile-status-edit:hover .profile-status-bubble--toggle,.profile-status-edit:focus-within .profile-status-bubble--toggle,.profile-status-edit[open] .profile-status-bubble--toggle,.profile-status-bubble--view:hover,.profile-status-bubble--view:focus-within{white-space:normal!important;max-width:320px!important;min-width:180px!important;align-items:flex-end!important}</style>
+                <?php if ($isOwner): ?>
+                <details class="profile-status-edit" style="position:absolute;left:64px;right:auto;bottom:-4px;z-index:50;max-width:none">
+                    <summary class="profile-status-bubble profile-status-bubble--toggle" style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:220px;padding:<?= $statusHas ? '6px 10px' : '6px' ?>;border-radius:14px;background:var(--surface,#fff);color:var(--text,#111);border:1px solid var(--line,rgba(0,0,0,.12));box-shadow:0 4px 12px rgba(0,0,0,.12);font-size:12px;line-height:1.3;white-space:nowrap">
+                        <span class="profile-status-icon" style="font-size:14px;line-height:1;flex:none"><?= e($statusIconShow) ?></span>
+                        <span class="profile-status-text" style="display:none;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e($statusText !== '' ? $statusText : 'Set status') ?></span>
+                    </summary>
+                    <form method="post" action="<?= e(url('/account/profile/status')) ?>" class="profile-status-form" style="position:absolute;left:0;top:calc(100% + 8px);width:240px;padding:10px;border-radius:12px;background:var(--surface,#fff);border:1px solid var(--line,rgba(0,0,0,.12));box-shadow:0 8px 24px rgba(0,0,0,.16);white-space:normal;z-index:200">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="next" value="<?= e($profilePath) ?>">
+                        <label class="sr-only" for="profile_status_icon">Status icon</label>
+                        <select id="profile_status_icon" name="status_icon" style="width:100%;margin-bottom:8px">
+                            <?php foreach (['' => 'No icon', '💬' => '💬 Comment', '😊' => '😊 Happy', '🎯' => '🎯 Focused', '🔥' => '🔥 On fire', '💻' => '💻 Coding', '🎮' => '🎮 Gaming', '📚' => '📚 Learning', '🎵' => '🎵 Music', '🌙' => '🌙 Away', '🚀' => '🚀 Building', '☕' => '☕ Coffee'] as $val => $label): ?>
+                            <option value="<?= e($val) ?>" <?= $statusIcon === $val ? 'selected' : '' ?>><?= e($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <label class="sr-only" for="profile_status_text">Status</label>
+                        <input id="profile_status_text" name="status_text" type="text" maxlength="80" value="<?= e($statusText) ?>" placeholder="What are you up to?" style="width:100%;margin-bottom:8px">
+                        <div style="display:flex;gap:6px;justify-content:flex-end">
+                            <button class="btn btn-sm btn-primary" type="submit">Save</button>
+                        </div>
+                    </form>
+                </details>
+                <?php elseif ($statusHas): ?>
+                <span class="profile-status-bubble profile-status-bubble--view" style="position:absolute;left:64px;right:auto;bottom:-4px;z-index:20;display:inline-flex;align-items:center;gap:6px;max-width:220px;padding:6px 10px;border-radius:14px;background:var(--surface,#fff);color:var(--text,#111);border:1px solid var(--line,rgba(0,0,0,.12));box-shadow:0 4px 12px rgba(0,0,0,.12);font-size:12px;line-height:1.3;white-space:nowrap">
+                    <span class="profile-status-icon" style="font-size:14px;line-height:1;flex:none"><?= e($statusIconShow) ?></span>
+                    <span class="profile-status-text" style="display:none;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e($statusText) ?></span>
+                </span>
+                <?php endif; ?>
                 <?php if ($studio): ?><button class="studio-edit-button" type="button" data-studio-edit="studio-details" data-tooltip="Change avatar" aria-label="Change avatar"><?= icon('pencil') ?></button><?php endif; ?>
             </div>
             <div>
@@ -182,7 +216,7 @@ $studio = $studioAllowed && !$preview;
 </div>
 
 <?php if ($showcases !== []): ?>
-<div class="showcase-grid">
+<div class="showcase-grid" style="position:relative;z-index:0">
     <?php foreach ($showcases as $showcase): ?>
     <?php
     $type = (string) $showcase['type'];

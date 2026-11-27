@@ -62,6 +62,7 @@ return [
     ['GET', '/account/profile', [AccountController::class, 'profile']],
     ['POST', '/account/profile', [AccountController::class, 'updateProfile']],
     ['POST', '/account/profile/description', [AccountController::class, 'updateInlineDescription']],
+    ['POST', '/account/profile/status', [AccountController::class, 'updateInlineStatus']],
     ['GET', '/account/handle-check', [AccountController::class, 'checkHandle']],
     ['POST', '/account/bestfriends', [AccountController::class, 'updateBestFriends']],
     ['POST', '/account/badges/visibility', [AccountController::class, 'updateBadgeVisibility']],

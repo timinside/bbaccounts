@@ -392,6 +392,8 @@ final class OAuthController extends Controller
             'banner_url' => $banner !== '' ? url('/uploads/banners/' . rawurlencode($banner)) : $none,
             'background_url' => $background !== '' ? url('/uploads/banners/' . rawurlencode($background)) : $none,
             'description' => $none,
+            'status_text' => $none,
+            'status_icon' => $none,
             'steam_id64' => $none,
             'telegram' => $none,
             'discord' => $none,
@@ -404,7 +406,11 @@ final class OAuthController extends Controller
 
         if ($full) {
             $description = trim((string) ($account['description'] ?? ''));
+            $statusText = trim((string) ($account['status_text'] ?? ''));
+            $statusIcon = trim((string) ($account['status_icon'] ?? ''));
             $data['description'] = $description !== '' ? $description : $none;
+            $data['status_text'] = $statusText !== '' ? $statusText : $none;
+            $data['status_icon'] = $statusIcon !== '' ? $statusIcon : $none;
             $data['level'] = level_info($account)['label'];
 
             $created = strtotime((string) ($account['created_at'] ?? ''));

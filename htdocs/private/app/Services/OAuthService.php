@@ -435,7 +435,7 @@ final class OAuthService
         }
 
         $row = Db::one(
-            'SELECT t.*, a.email, a.display_name, a.username, a.description, a.avatar_type, a.avatar_value, a.status, a.status_until,
+            'SELECT t.*, a.email, a.display_name, a.username, a.description, a.status_text, a.status_icon, a.avatar_type, a.avatar_value, a.status, a.status_until,
                     a.share_social, a.updated_at AS account_updated_at
              FROM oauth_tokens t
              INNER JOIN accounts a ON a.id = t.account_id
@@ -457,6 +457,8 @@ final class OAuthService
             $data['display_name'] = (string) $row['display_name'];
             $data['username'] = (string) ($row['username'] ?? '');
             $data['description'] = (string) ($row['description'] ?? '');
+            $data['status_text'] = (string) ($row['status_text'] ?? '');
+            $data['status_icon'] = (string) ($row['status_icon'] ?? '');
             $data['avatar_url'] = avatar_url([
                 'id' => (int) $row['account_id'],
                 'avatar_type' => $row['avatar_type'],

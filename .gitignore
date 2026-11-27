@@ -1,0 +1,34 @@
+[Bb]in/
+obj/
+vendor/
+node_modules/
+
+# Secrets live only on the machine or server that needs them.
+htdocs/private/config/config.php
+htdocs/private/config/config.local.php
+
+# Runtime output.
+htdocs/private/storage/logs/*
+!htdocs/private/storage/logs/.gitkeep
+htdocs/private/storage/sessions/*
+!htdocs/private/storage/sessions/.htaccess
+!htdocs/private/storage/sessions/index.html
+!htdocs/private/storage/sessions/.gitkeep
+htdocs/private/storage/cache/*
+!htdocs/private/storage/cache/.gitkeep
+htdocs/private/storage/update-check.json
+htdocs/private/storage/update-check.lock
+
+# User uploads/runtime files (keep directory structure and protection files).
+htdocs/uploads/*
+!htdocs/uploads/.htaccess
+!htdocs/uploads/.gitkeep
+!htdocs/uploads/*/
+htdocs/uploads/*/*
+!htdocs/uploads/*/.gitkeep
+!htdocs/uploads/*/.htaccess
+!htdocs/uploads/*/index.html
+
+.DS_Store
+Thumbs.db
+*.log

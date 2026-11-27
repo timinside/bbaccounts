@@ -155,16 +155,16 @@ $unread = (int) Db::value(
 </dialog>
 <script>
 window.BBA_TUTORIAL_STEPS = [
-    {title:'Overview', sub:'Account', body:'Your home dashboard: quick status, account summary, and shortcuts to important actions.'},
-    {title:'My profile', sub:'Account', body:'Edit your public profile, avatar/banner, showcases, bio, and see how others view your page.'},
-    {title:'Friends', sub:'Account', body:'Manage friend requests, your friends list, and friend-related profile features.'},
-    {title:'Teams', sub:'Account', body:'View teams you belong to and team roles linked to your account.'},
-    {title:'Referrals', sub:'Account', body:'Track referral links and rewards you get for inviting people.'},
-    {title:'Security', sub:'Account', body:'Change password, manage sessions/devices, 2FA, recovery codes, and security settings.'},
-    {title:'Authorized apps', sub:'Account', body:'See apps you gave OAuth access to, review scopes, and revoke access when needed.'},
-    {title:'Connections', sub:'Account', body:'Link social accounts (Google, GitHub, Discord, etc.) for sign-in and profile connections.'},
-    {title:'Help', sub:'Account', body:'Contact support/moderators, open tickets, and replay this tutorial any time.'},
-    {title:'Projects', sub:'Developer', body:'If you have developer access: create OAuth projects, redirect URIs, client credentials, and manage API keys.'}
+    {title:'Overview', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/overview.png')) ?>', body:'Your home dashboard: quick status, account summary, and shortcuts to important actions.'},
+    {title:'My profile', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/profile.png')) ?>', body:'Edit your public profile, avatar/banner, showcases, bio, and see how others view your page.'},
+    {title:'Friends', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/friends.png')) ?>', body:'Manage friend requests, your friends list, and friend-related profile features.'},
+    {title:'Teams', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/teams.png')) ?>', body:'View teams you belong to and team roles linked to your account.'},
+    {title:'Referrals', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/referrals.png')) ?>', body:'Track referral links and rewards you get for inviting people.'},
+    {title:'Security', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/security.png')) ?>', body:'Change password, manage sessions/devices, 2FA, recovery codes, and security settings.'},
+    {title:'Authorized apps', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/apps.png')) ?>', body:'See apps you gave OAuth access to, review scopes, and revoke access when needed.'},
+    {title:'Connections', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/connections.png')) ?>', body:'Link social accounts (Google, GitHub, Discord, etc.) for sign-in and profile connections.'},
+    {title:'Help', sub:'Account', img:'<?= e(asset('/assets/img/tutorial/help.png')) ?>', body:'Contact support/moderators, open tickets, and replay this tutorial any time.'},
+    {title:'Projects', sub:'Developer', img:'<?= e(asset('/assets/img/tutorial/projects.png')) ?>', body:'If you have developer access: create OAuth projects, redirect URIs, client credentials, and manage API keys.'}
 ];
 </script>
 <?php endif; ?>

@@ -119,6 +119,11 @@ abstract class Controller
             Session::set('_old', $old);
         }
 
+        $next = safe_next_path($this->input('next'));
+        if ($next !== '') {
+            $this->redirect($next);
+        }
+
         $referer = (string) ($_SERVER['HTTP_REFERER'] ?? '');
         $path = parse_url($referer, PHP_URL_PATH);
         $query = parse_url($referer, PHP_URL_QUERY);

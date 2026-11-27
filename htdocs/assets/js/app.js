@@ -783,7 +783,22 @@ document.addEventListener('click', function (event) {
         var s = steps[i] || {};
         if (title) title.textContent = s.title || 'Tutorial';
         if (sub) sub.textContent = s.sub || '';
-        if (body) body.textContent = s.body || '';
+        if (body) {
+            body.innerHTML = '';
+            if (s.img) {
+                var img = document.createElement('img');
+                img.src = s.img;
+                img.alt = s.title || '';
+                img.loading = 'lazy';
+                img.style.cssText = 'display:block;width:100%;max-width:520px;border-radius:12px;margin:0 0 12px';
+                img.onerror = function () { this.remove(); };
+                body.appendChild(img);
+            }
+            var p = document.createElement('p');
+            p.style.margin = '0';
+            p.textContent = s.body || '';
+            body.appendChild(p);
+        }
         if (prev) prev.disabled = i <= 0;
         if (next) next.textContent = i >= steps.length - 1 ? 'Done' : 'Next';
     }

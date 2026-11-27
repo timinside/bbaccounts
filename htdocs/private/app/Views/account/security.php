@@ -207,19 +207,26 @@ $telegramLinkExpires = (string) ($telegramLinkExpires ?? '');
             <?php if (!$telegramConfigured): ?>
             <p class="field-hint">Telegram bot is not configured on this server.</p>
             <?php elseif (!$telegramLinked): ?>
-            <p class="page-sub" style="margin-top:0">Link your Telegram account to receive 2FA codes and notifications.</p>
+            <div class="telegram-step" style="margin-top:0">
+                <img src="<?= e(url('/assets/img/telegram/step-1.png')) ?>" alt="Telegram setup step 1" loading="lazy" style="display:block;width:100%;max-width:420px;border-radius:12px;margin:0 0 10px" onerror="this.remove()">
+                <p class="page-sub" style="margin-top:0"><strong>Step 1.</strong> Generate a link code for your Telegram account.</p>
+            </div>
+            <form method="post" action="<?= e(url('/account/telegram/link')) ?>" class="form" style="margin-top:12px">
+                <?= csrf_field() ?>
+                <button class="btn btn-secondary" type="submit"><?= icon('send') ?><span><?= $telegramLinkCode !== '' ? 'Generate new code' : 'Link Telegram' ?></span></button>
+            </form>
             <?php if ($telegramLinkCode !== '' && $telegramLinkExpires !== '' && strtotime($telegramLinkExpires) > time()): ?>
+            <div class="telegram-step" style="margin-top:16px">
+                <img src="<?= e(url('/assets/img/telegram/step-2.png')) ?>" alt="Telegram setup step 2" loading="lazy" style="display:block;width:100%;max-width:420px;border-radius:12px;margin:0 0 10px" onerror="this.remove()">
+                <p class="page-sub" style="margin-top:0"><strong>Step 2.</strong> Send this command to <?php if ($telegramBotUsername !== ''): ?><a href="https://t.me/<?= e($telegramBotUsername) ?>" target="_blank" rel="noopener">@<?= e($telegramBotUsername) ?></a><?php else: ?>the configured bot<?php endif; ?>.</p>
+            </div>
             <div class="secret-panel"><div class="secret-rows"><div>
                 <span class="secret-key">Code</span>
                 <code>/start <?= e($telegramLinkCode) ?></code>
                 <button class="btn btn-sm btn-ghost" type="button" data-copy data-copy-value="/start <?= e($telegramLinkCode) ?>"><?= icon('copy') ?><span data-copy-label>Copy</span></button>
             </div></div></div>
-            <p class="field-hint">Send this command to <?php if ($telegramBotUsername !== ''): ?><a href="https://t.me/<?= e($telegramBotUsername) ?>" target="_blank" rel="noopener">@<?= e($telegramBotUsername) ?></a><?php else: ?>the configured bot<?php endif; ?>. Code expires <?= e(format_date($telegramLinkExpires, 'M j, Y · H:i')) ?> UTC.</p>
+            <p class="field-hint">Code expires <?= e(format_date($telegramLinkExpires, 'M j, Y — H:i')) ?> UTC.</p>
             <?php endif; ?>
-            <form method="post" action="<?= e(url('/account/telegram/link')) ?>" class="form" style="margin-top:12px">
-                <?= csrf_field() ?>
-                <button class="btn btn-secondary" type="submit"><?= icon('send') ?><span><?= $telegramLinkCode !== '' ? 'Generate new code' : 'Link Telegram' ?></span></button>
-            </form>
             <?php else: ?>
             <p class="page-sub" style="margin-top:0">Linked<?= $telegramUsername !== '' ? ' as @' . e($telegramUsername) : '' ?>.</p>
             <form method="post" action="<?= e(url('/account/telegram/settings')) ?>" class="form" style="margin-top:12px">

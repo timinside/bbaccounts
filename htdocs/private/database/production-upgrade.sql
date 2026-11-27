@@ -551,3 +551,11 @@ CREATE TABLE IF NOT EXISTS project_cells (
     KEY idx_project_cells_project_account (project_id, account_id, updated_at),
     CONSTRAINT fk_project_cells_project FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Custom profile status.
+ALTER TABLE accounts
+    ADD COLUMN IF NOT EXISTS status_text VARCHAR(80) NULL AFTER description;
+
+ALTER TABLE accounts
+    ADD COLUMN IF NOT EXISTS status_icon VARCHAR(32) NULL AFTER status_text;

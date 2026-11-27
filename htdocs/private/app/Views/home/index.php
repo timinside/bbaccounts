@@ -44,16 +44,19 @@ $account = $account ?? Auth::user();
 
 <div class="steps">
     <div class="step">
+        <img src="<?= e(url('/assets/img/tutorial/step-1.png')) ?>" alt="" loading="lazy" style="display:block;width:100%;border-radius:12px;margin:0 0 12px" onerror="this.remove()">
         <span class="step-num">01 / account</span>
         <h3><?= e(t('Create your account')) ?></h3>
         <p><?= e(t('Register once on bbaccounts to use a single account across connected projects.')) ?></p>
     </div>
     <div class="step">
+        <img src="<?= e(url('/assets/img/tutorial/step-2.png')) ?>" alt="" loading="lazy" style="display:block;width:100%;border-radius:12px;margin:0 0 12px" onerror="this.remove()">
         <span class="step-num">02 / consent</span>
         <h3><?= e(t('Approve access')) ?></h3>
         <p><?= e(t('When a connected app requests sign-in, bbaccounts shows what data is requested and you choose whether to allow it.')) ?></p>
     </div>
     <div class="step">
+        <img src="<?= e(url('/assets/img/tutorial/step-3.png')) ?>" alt="" loading="lazy" style="display:block;width:100%;border-radius:12px;margin:0 0 12px" onerror="this.remove()">
         <span class="step-num">03 / manage</span>
         <h3><?= e(t('Stay in control')) ?></h3>
         <p><?= e(t('You can review and revoke authorized apps, manage your profile, and protect your account from your settings.')) ?></p>
