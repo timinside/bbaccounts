@@ -291,6 +291,7 @@ curl -i -A "MyApp/1.0" -X POST "https://bbaccounts.unaux.com/oauth/userinfo" \
   "display_name": "Example User",
   "username": "example_user",
   "description": "Builds small tools.",
+  "status_text": "Building something cool.",
   "avatar_url": "https://bbaccounts.unaux.com/avatar/42.svg",
   "email": "user@example.com",
   "email_verified": false,
@@ -352,7 +353,7 @@ grant_type=authorization_code
                 <table>
                     <thead><tr><th>Scope</th><th>Grants</th></tr></thead>
                     <tbody>
-                        <tr><td><code>profile</code></td><td><code>display_name</code>, <code>username</code>, <code>description</code>, <code>avatar_url</code>, and <code>social</code> for providers the account chose to share</td></tr>
+                        <tr><td><code>profile</code></td><td><code>display_name</code>, <code>username</code>, <code>description</code>, <code>status_text</code>, <code>avatar_url</code>, and <code>social</code> for providers the account chose to share</td></tr>
                         <tr><td><code>email</code></td><td><code>email</code>, <code>email_verified</code></td></tr>
                         <tr><td><code>guard</code></td><td>Read the Guard secret and current six-digit code through the Guard API (verified projects only)</td></tr>
                         <tr><td><code>points</code></td><td>Read and change the account&#039;s point balance through the Points API (verified projects only)</td></tr>
